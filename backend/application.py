@@ -14,7 +14,7 @@ mydb = mysql.connector.connect(
 )
 
 mycursor = mydb.cursor(dictionary=True)
-mycursor.execute("USE sql5715671;")
+mycursor.execute("USE " + os.getenv("DB_NAME") + ";")
 
 @application.route('/get_courses', methods=['GET'])
 def get_courses():
