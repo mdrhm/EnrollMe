@@ -103,3 +103,90 @@ GET /get_courses?q=intro
   }
 ]
 ```
+
+### Endpoint: `/get_professors`
+
+### Parameters
+
+- `q` (optional): A search query to filter professors by their name. This performs a partial match.
+- `id` (optional): The professor ID to filter the professors. This performs an exact match.
+
+### Example Requests and Response
+
+#### 1. Retrieve all professors
+
+```http
+GET /get_professors
+```
+#### Response
+```json
+[
+  [
+    {
+      "email": "manshel@ccny.cuny.edu",
+      "id": 1,
+      "name": "Michael Anshel"
+    },
+    {
+      "email": "aarapi@ccny.cuny.edu",
+      "id": 2,
+      "name": "Albi Arapi"
+    },
+    {
+      "email": "hauda@ccny.cuny.edu",
+      "id": 3,
+      "name": "Hesham Auda"
+    },
+    {
+      "email": "navteniev@ccny.cuny.edu",
+      "id": 4,
+      "name": "Nikolai Avteniev"
+    },
+    {
+      "email": "obetancourt@ccny.cuny.edu",
+      "id": 5,
+      "name": "Octavio Betancourt"
+    },
+  ...
+]
+```
+
+#### 2. Retrieve a professor by ID
+```http
+GET /get_professors?id=44
+```
+#### Response
+```json
+[
+  {
+    "email": "wskeith@ccny.cuny.edu",
+    "id": 44,
+    "name": "William Skeith"
+  }
+]
+```
+
+#### 3. Search for Professors
+```http
+GET /get_professors?q=au
+```
+#### Response
+```json
+[
+  {
+    "email": "hauda@ccny.cuny.edu",
+    "id": 3,
+    "name": "Hesham Auda"
+  },
+  {
+    "email": "apedersen@cs.ccny.cuny.edu",
+    "id": 40,
+    "name": "Arthur Paul Pedersen"
+  },
+  {
+    "email": "ctaylor2@ccny.cuny.edu",
+    "id": 47,
+    "name": "Chaunce  Taylor"
+  }
+]
+```

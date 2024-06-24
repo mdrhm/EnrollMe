@@ -31,6 +31,21 @@ def get_courses():
     arr += [row]
  return arr
 
+@application.route('/get_professors', methods=['GET'])
+def get_professors():
+ query = request.args.get('q')
+ id = request.args.get('id')
+ sql = "SELECT * FROM professor"
+ if id:
+    sql += " WHERE id = " + id
+ elif query:
+    sql += " WHERE name LIKE '%" + query + "%'"
+ mycursor.execute(sql + ";")
+ arr = []
+ for row in mycursor:
+    arr += [row]
+ return arr
+
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8000)))
