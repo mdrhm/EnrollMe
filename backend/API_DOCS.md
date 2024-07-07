@@ -20,30 +20,26 @@ GET /get_courses
   {
     "course_id": 1,
     "course_level": 10300,
-    "course_subject": "CSC",
     "credits": 3,
-    "name": "Introduction to Computing for Majors"
+    "description": "Intensive introduction to computing, tailored to the needs of those majoring in computer science and computer engineering. Introduction to programming in a modern object-oriented programming language such as C++, with particular emphasis on the logical evolution of working programs from specifications.",
+    "name": "Introduction to Computing for Majors",
+    "subject": "CSC"
   },
   {
     "course_id": 2,
     "course_level": 10400,
-    "course_subject": "CSC",
     "credits": 4,
-    "name": "Discrete Mathematical Structures"
+    "description": "Introduction to the mathematics fundamental to all phases of computer science, from the formulation of problems to the understanding of their underlying structure, to the comparative analysis of the complexity of algorithms that can be used to solve these problems. The course introduces combinatorics, first-order logic, induction, set theory, relations and functions, graphs, trees, and number theory.",
+    "name": "Discrete Mathematical Structures",
+    "subject": "CSC"
   },
   {
     "course_id": 3,
     "course_level": 11300,
-    "course_subject": "CSC",
     "credits": 1,
-    "name": "Programming Language"
-  },
-  {
-    "course_id": 4,
-    "course_level": 21100,
-    "course_subject": "CSC",
-    "credits": 3,
-    "name": "Fundamentals of Computer Systems"
+    "description": "This course designed to develop understanding of and fluency in current and important programming languages.  Specifically, this class will teach the fluency in Python.  The course is intended for those who have already learned object-oriented concepts in at least one programming language.  A series of programming projects is an essential component of the course.",
+    "name": "Programming Language",
+    "subject": "CSC"
   },
   ...
 ]
@@ -59,9 +55,10 @@ GET /get_courses?id=1
   {
     "course_id": 1,
     "course_level": 10300,
-    "course_subject": "CSC",
     "credits": 3,
-    "name": "Introduction to Computing for Majors"
+    "description": "Intensive introduction to computing, tailored to the needs of those majoring in computer science and computer engineering. Introduction to programming in a modern object-oriented programming language such as C++, with particular emphasis on the logical evolution of working programs from specifications.",
+    "name": "Introduction to Computing for Majors",
+    "subject": "CSC"
   }
 ]
 ```
@@ -76,30 +73,34 @@ GET /get_courses?q=intro
   {
     "course_id": 1,
     "course_level": 10300,
-    "course_subject": "CSC",
     "credits": 3,
-    "name": "Introduction to Computing for Majors"
+    "description": "Intensive introduction to computing, tailored to the needs of those majoring in computer science and computer engineering. Introduction to programming in a modern object-oriented programming language such as C++, with particular emphasis on the logical evolution of working programs from specifications.",
+    "name": "Introduction to Computing for Majors",
+    "subject": "CSC"
   },
   {
     "course_id": 10,
     "course_level": 30400,
-    "course_subject": "CSC",
     "credits": 3,
-    "name": "Introduction to Theoretical Computer Science"
+    "description": "Finite state automata, pushdown automata, Turing Machines, and the languages they can recognize. Church\u2019s Thesis. Computibility. The classes P and NP; NP-complete and intractable problems.",
+    "name": "Introduction to Theoretical Computer Science",
+    "subject": "CSC"
   },
   {
     "course_id": 14,
     "course_level": 33600,
-    "course_subject": "CSC",
     "credits": 3,
-    "name": "Introduction to Database Systems"
+    "description": "An introduction to database architecture. Levels of abstraction in a database system; physical database organization: abstract data models; relational databases and their query languages. Database design assignments.",
+    "name": "Introduction to Database Systems",
+    "subject": "CSC"
   },
   {
     "course_id": 24,
     "course_level": 48600,
-    "course_subject": "CSC",
     "credits": 3,
-    "name": "Introduction to Computational Complexity"
+    "description": "An introduction to the performance and limitations of computer algorithms through a study of selected algorithms. Topics include primality testing and integer factorization, algorithms for integer programming and knapsack problems, reductions and NP-completeness, randomized algorithms, and experimental algorithms arising from new technologies such as molecular, neural, and quantum computing.",
+    "name": "Introduction to Computational Complexity",
+    "subject": "CSC"
   }
 ]
 ```

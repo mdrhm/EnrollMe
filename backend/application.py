@@ -1,30 +1,6 @@
-import mysql.connector
 from flask import Flask, request, Response
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE
 application = Flask(__name__)
-
-mydb = mysql.connector.connect(
-  host=os.getenv("DB_HOST"),
-  user=os.getenv("DB_USER"),
-  password=os.getenv("DB_PASSWORD"),
-  port=os.getenv("DB_PORT"),
-)
-
-mycursor = mydb.cursor(dictionary=True)
-mycursor.execute("USE " + os.getenv("DB_NAME") + ";")
-
-def SELECT_FROM_WHERE(s, f, w="1=1"):
-    try:
-        mycursor.execute("SELECT " + s + " FROM " + f + " WHERE " + w + ";")
-        arr = []
-        for row in mycursor:
-            arr += [row]
-        return arr
-    except:
-        return {"error": "There was an error"}
 
 @application.route('/get_courses', methods=['GET'])
 def get_courses():
@@ -33,7 +9,7 @@ def get_courses():
     if id:
         return SELECT_FROM_WHERE("*", "course", "course_id = " + id)
     elif query:
-        return SELECT_FROM_WHERE("*", "course", "CONCAT(course_subject, course_level, name) LIKE '%" + query.replace(" ", "%") + "%'")
+        return SELECT_FROM_WHERE("*", "course", "CONCAT(subject, course_level, name) LIKE '%" + query.replace(" ", "%") + "%'")
     return SELECT_FROM_WHERE("*", "course")
 
 @application.route('/get_professors', methods=['GET'])
@@ -41,10 +17,10 @@ def get_professors():
     query = request.args.get('q')
     id = request.args.get('id')
     if id:
-        return SELECT_FROM_WHERE("*", "professor", "id = " + id)
+        return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor", "id = " + id)
     elif query:
-        return SELECT_FROM_WHERE("*", "professor", "name LIKE '%" + query.replace(" ", "%") + "%'")
-    return SELECT_FROM_WHERE("*", "professor")
+        return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor", "CONCAT(first_name, ' ', last_name) LIKE '%" + query.replace(" ", "%") + "%'")
+    return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor")
 
 @application.route('/get_sections', methods=['GET'])
 def get_sections():
@@ -67,5 +43,6 @@ def get_sections():
     return sections
 
 if __name__ == "__main__":
-    application.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8000)))
+    application.run(host='0.0.0.0', debug=True, port=8000)
+
 
