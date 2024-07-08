@@ -1,4 +1,4 @@
-from flask import Flask, request, Response
+from flask import Flask, request
 import hashlib
 from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE
 application = Flask(__name__)
@@ -56,16 +56,16 @@ def professors():
             "password": None if not request.headers.get('password') else hashlib.sha256(request.headers.get('password').encode('utf-8')).hexdigest()
         }
         if None in professor.values() or None in professor_login.values():
-            return {"error": "Invalid header"}
+            return {"status": 400, "error": "Invalid header"}, 400
         INSERT_INTO("professor", professor)
         inserted = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY professor_id DESC LIMIT 1")[0]
         professor_login["id"] = str(inserted.get("professor_id"))
         INSERT_INTO("login", professor_login)
-        return inserted
+        return inserted, 201
     elif request.method == 'DELETE':
       professor_id = request.headers.get('id')
       if not professor_id:
-        return {"error": "Invalid Professor ID"}
+        return {"status": 400, "error": "Invalid Professor ID"}, 400
       DELETE_FROM_WHERE("login", "id=" + professor_id)
       return DELETE_FROM_WHERE("professor", "professor_id=" + professor_id)
 
@@ -86,16 +86,16 @@ def students():
             "password": None if not request.headers.get('password') else hashlib.sha256(request.headers.get('password').encode('utf-8')).hexdigest()
         }
         if None in student.values() or None in student_login.values():
-            return {"error": "Invalid header"}
+            return {"status": 400, "error": "Invalid header"}, 400
         INSERT_INTO("student", student)
         inserted = SELECT_FROM_WHERE("*", "student", "1=1 ORDER BY student_id DESC LIMIT 1")[0]
         student_login["id"] = str(inserted.get("student_id"))
         INSERT_INTO("login", student_login)
-        return inserted
+        return inserted, 201
     elif request.method == 'DELETE':
       student_id = request.headers.get('id')
       if not student_id:
-        return {"error": "Invalid Student ID"}
+        return {"status": 400, "error": "Invalid Student ID"}, 400
       DELETE_FROM_WHERE("login", "id=" + student_id)
       return DELETE_FROM_WHERE("student", "student_id=" + student_id)
 
@@ -111,14 +111,14 @@ def login():
     elif email and password:
         where = "login.email='" + email + "' AND password='" + password + "'"
     else:
-        return {"error": "One of student ID, email, or password wasn't provided"}
+        return {"status": 400, "error": "One of ID, email, or password wasn't provided"}, 400
     student = SELECT_FROM_WHERE("student_id, first_name, last_name, student.email, phone_number, dob, sex, major, CONCAT(first_name, ' ', last_name) AS full_name", "student INNER JOIN login ON login.id=student.student_id", where)
     professor = SELECT_FROM_WHERE("professor_id, first_name, last_name, professor.email, phone_number, department, CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN login ON login.id=professor.professor_id", where)
     if account_type == 'student' and len(student) > 0:
         return student[0]
     elif account_type == 'professor' and len(professor) > 0:
         return professor[0]
-    return {"error": "Invalid login credentials"}
+    return {"status": 401, "error": "Invalid login credentials"}, 401
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True, port=8000)
