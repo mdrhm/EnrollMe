@@ -44,9 +44,7 @@ def professors():
             return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor", "CONCAT(first_name, ' ', last_name) LIKE '%" + query.replace(" ", "%") + "%'")
         return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor")
     elif request.method == 'POST':
-        id = str(len(SELECT_FROM_WHERE("*", "professor")) + 10000)
         professor = {
-            "professor_id": id,
             "first_name": request.headers.get('firstname'),
             "last_name": request.headers.get('lastname'),
             "email": request.headers.get('email'),
@@ -54,14 +52,16 @@ def professors():
             "department": request.headers.get('department')
         }
         professor_login = {
-            "id": id,
             "email": request.headers.get('email'),
             "password": None if not request.headers.get('password') else hashlib.sha256(request.headers.get('password').encode('utf-8')).hexdigest()
         }
         if None in professor.values() or None in professor_login.values():
             return {"error": "Invalid header"}
+        INSERT_INTO("professor", professor)
+        inserted = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY professor_id DESC LIMIT 1")[0]
+        professor_login["id"] = str(inserted.get("professor_id"))
         INSERT_INTO("login", professor_login)
-        return INSERT_INTO("professor", professor)
+        return inserted
     elif request.method == 'DELETE':
       professor_id = request.headers.get('id')
       if not professor_id:
@@ -72,9 +72,7 @@ def professors():
 @application.route('/students', methods=['GET', 'POST', 'DELETE'])
 def students():
     if request.method == 'POST':
-        id = str(len(SELECT_FROM_WHERE("*", "student")) + 10000000)
         student = {
-            "student_id": id,
             "first_name": request.headers.get('firstname'),
             "last_name": request.headers.get('lastname'),
             "email": request.headers.get('email'),
@@ -84,14 +82,16 @@ def students():
             "major": request.headers.get('major')
         }
         student_login = {
-            "id": id,
             "email": request.headers.get('email'),
             "password": None if not request.headers.get('password') else hashlib.sha256(request.headers.get('password').encode('utf-8')).hexdigest()
         }
         if None in student.values() or None in student_login.values():
             return {"error": "Invalid header"}
+        INSERT_INTO("student", student)
+        inserted = SELECT_FROM_WHERE("*", "student", "1=1 ORDER BY student_id DESC LIMIT 1")[0]
+        student_login["id"] = str(inserted.get("student_id"))
         INSERT_INTO("login", student_login)
-        return INSERT_INTO("student", student)
+        return inserted
     elif request.method == 'DELETE':
       student_id = request.headers.get('id')
       if not student_id:
