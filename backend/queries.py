@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-mydb = mysql.connector.connect(
+db = mysql.connector.connect(
   host=os.getenv("DB_HOST"),
   user=os.getenv("DB_USER"),
   password=os.getenv("DB_PASSWORD"),
@@ -11,29 +11,29 @@ mydb = mysql.connector.connect(
   autocommit=True
 )
 
-mycursor = mydb.cursor(dictionary=True)
-mycursor.execute("USE " + os.getenv("DB_NAME") + ";")
+cursor = db.cursor(dictionary=True)
+cursor.execute("USE " + os.getenv("DB_NAME") + ";")
 
 def SELECT_FROM_WHERE(s, f, w="1=1"):
     try:
-        mycursor.execute("SELECT " + s + " FROM " + f + " WHERE " + w + ";")
+        cursor.execute("SELECT " + s + " FROM " + f + " WHERE " + w + ";")
         arr = []
-        for row in mycursor:
+        for row in cursor:
             arr += [row]
         return arr
-    except:
-        return {"error": "There was an error"}
+    except Exception as error:
+        return {"error": str(error)}
 
 def INSERT_INTO(t, d):
     try:
-        mycursor.execute("INSERT INTO " + t + "(" + ", ".join(list(d.keys())) + ") VALUES ('" + "', '".join(list(d.values())) + "');")
-        return {"message": "Insert Successful"}
-    except:
-        return {"error": "There was an error"}
+        cursor.execute("INSERT INTO " + t + "(" + ", ".join(list(d.keys())) + ") VALUES ('" + "', '".join(list(d.values())) + "');")
+        return {"message": "Insert Successful", "inserted": d}
+    except Exception as error:
+        return {"error": str(error)}
 
 def DELETE_FROM_WHERE(t, w):
     try:
-        mycursor.execute("DELETE FROM " + t + " WHERE " + w + ";")
-        return {"message": "Row Deleted"}
-    except:
-        return {"error": "There was an error"}
+        cursor.execute("DELETE FROM " + t + " WHERE " + w + ";")
+        return {"message": "Deletion Successful"}
+    except Exception as error:
+        return {"error": str(error)}
