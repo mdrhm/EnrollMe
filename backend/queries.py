@@ -37,3 +37,11 @@ def DELETE_FROM_WHERE(t, w):
         return {"message": "Deletion Successful"}
     except Exception as error:
         return {"error": str(error)}
+
+def UPDATE_SET_WHERE(t, s, w):
+    try:
+        set = list(map(lambda key: str(key + " = '" + str(s[key]) + "'"), s.keys()))
+        cursor.execute("UPDATE " + t + " SET " + ", ".join(set) + " WHERE " + w + ";")
+        return SELECT_FROM_WHERE("*", t, w)
+    except Exception as error:
+        return {"error": str(error)}

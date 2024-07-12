@@ -1,6 +1,6 @@
 from flask import Flask, request
 import hashlib
-from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE
+from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE
 application = Flask(__name__)
 
 @application.route('/courses', methods=['GET'])
@@ -33,7 +33,7 @@ def sections():
         sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.name), professor.id", "professor INNER JOIN section ON section.professor_id = professor.id", "section_id = " + str(sections[i]["section_id"]))
     return sections
 
-@application.route('/professors', methods=['GET', 'POST', 'DELETE'])
+@application.route('/professors', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def professors():
     if request.method == 'GET':
         query = request.args.get('q')
@@ -70,8 +70,23 @@ def professors():
         return {"status": 400, "error": "Invalid Professor ID"}, 400
       DELETE_FROM_WHERE("login", "id=" + professor_id)
       return DELETE_FROM_WHERE("professor", "professor_id=" + professor_id)
+    elif request.method == 'PUT':
+        data = request.json
+        professor_id = str(data.get("id"))
+        if not professor_id:
+            return {"status": 400, "error": "Invalid Professor ID"}, 400
+        del data['id']
+        if data.get('password'):
+            password_updated = UPDATE_SET_WHERE("login", {"password" : hashlib.sha256(data.get('password').encode('utf-8')).hexdigest()}, "id = " + professor_id)
+            del data['password']
+            del password_updated['password']
+            if len(data) == 0:
+                return password_updated
+        if data.get('email'):
+            UPDATE_SET_WHERE("login", {"email" : data.get('email')}, "id = " + professor_id)
+        return UPDATE_SET_WHERE("professor", data, "professor_id = " + professor_id)[0]
 
-@application.route('/students', methods=['GET', 'POST', 'DELETE'])
+@application.route('/students', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def students():
     if request.method == 'POST':
         data = request.json
@@ -102,30 +117,44 @@ def students():
         return {"status": 400, "error": "Invalid Student ID"}, 400
       DELETE_FROM_WHERE("login", "id=" + student_id)
       return DELETE_FROM_WHERE("student", "student_id=" + student_id)
+    elif request.method == 'PUT':
+        data = request.json
+        student_id = str(data.get("id"))
+        if not student_id:
+            return {"status": 400, "error": "Invalid Student ID"}, 400
+        del data['id']
+        if data.get('password'):
+            password_updated = UPDATE_SET_WHERE("login", {"password" : hashlib.sha256(data.get('password').encode('utf-8')).hexdigest()}, "id = " + student_id)[0]
+            del data['password']
+            del password_updated['password']
+            if len(data) == 0:
+                return password_updated
+        if data.get('email'):
+            UPDATE_SET_WHERE("login", {"email" : data.get('email')}, "id = " + student_id)
+        return UPDATE_SET_WHERE("student", data, "student_id = " + student_id)[0]
 
-@application.route('/login', methods=['GET'])
+@application.route('/login', methods=['GET', 'POST'])
 def login():
-    data = request.json
-    id = str(data.get('id'))
-    password = hashlib.sha256(data.get('password').encode('utf-8')).hexdigest()
-    email = data.get('email')
-    account_type = data.get('account_type')
-    where = ''
-    if id and password:
-        where = "login.id='" + id + "' AND password='" + password + "'"
-    elif email and password:
-        where = "login.email='" + email + "' AND password='" + password + "'"
-    else:
-        return {"status": 400, "error": "One of ID, email, or password wasn't provided"}, 400
-    student = SELECT_FROM_WHERE("student_id, first_name, last_name, student.email, phone_number, dob, sex, major, CONCAT(first_name, ' ', last_name) AS full_name", "student INNER JOIN login ON login.id=student.student_id", where)
-    professor = SELECT_FROM_WHERE("professor_id, first_name, last_name, professor.email, phone_number, department, CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN login ON login.id=professor.professor_id", where)
-    if account_type == 'student' and len(student) > 0:
-        return student[0]
-    elif account_type == 'professor' and len(professor) > 0:
-        return professor[0]
-    return {"status": 401, "error": "Invalid login credentials"}, 401
-
+    if request.method == 'GET':
+        data = request.json
+        id = str(data.get('id'))
+        password = hashlib.sha256(data.get('password').encode('utf-8')).hexdigest()
+        email = data.get('email')
+        account_type = data.get('account_type')
+        where = ''
+        if id and password:
+            where = "login.id='" + id + "' AND password='" + password + "'"
+        elif email and password:
+            where = "login.email='" + email + "' AND password='" + password + "'"
+        else:
+            return {"status": 400, "error": "One of ID, email, or password wasn't provided"}, 400
+        student = SELECT_FROM_WHERE("student_id, first_name, last_name, student.email, phone_number, dob, sex, major, CONCAT(first_name, ' ', last_name) AS full_name", "student INNER JOIN login ON login.id=student.student_id", where)
+        professor = SELECT_FROM_WHERE("professor_id, first_name, last_name, professor.email, phone_number, department, CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN login ON login.id=professor.professor_id", where)
+        if account_type == 'student' and len(student) > 0:
+            return student[0]
+        elif account_type == 'professor' and len(professor) > 0:
+            return professor[0]
+        return {"status": 401, "error": "Invalid login credentials"}, 401
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True, port=8000)
-
 
