@@ -44,26 +44,28 @@ def professors():
             return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor", "CONCAT(first_name, ' ', last_name) LIKE '%" + query.replace(" ", "%") + "%'")
         return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor")
     elif request.method == 'POST':
+        data = request.json
         professor = {
-            "first_name": request.headers.get('firstname'),
-            "last_name": request.headers.get('lastname'),
-            "email": request.headers.get('email'),
-            "phone_number": request.headers.get('number'),
-            "department": request.headers.get('department')
+            "first_name": data.get('first_name'),
+            "last_name": data.get('last_name'),
+            "email": data.get('email'),
+            "phone_number": data.get('phone_number'),
+            "department": data.get('department')
         }
         professor_login = {
-            "email": request.headers.get('email'),
-            "password": None if not request.headers.get('password') else hashlib.sha256(request.headers.get('password').encode('utf-8')).hexdigest()
+            "email": data.get('email'),
+            "password": None if not data.get('password') else hashlib.sha256(data.get('password').encode('utf-8')).hexdigest()
         }
         if None in professor.values() or None in professor_login.values():
-            return {"status": 400, "error": "Invalid header"}, 400
+            return {"status": 400, "error": "Invalid data"}, 400
         INSERT_INTO("professor", professor)
         inserted = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY professor_id DESC LIMIT 1")[0]
         professor_login["id"] = str(inserted.get("professor_id"))
         INSERT_INTO("login", professor_login)
         return inserted, 201
     elif request.method == 'DELETE':
-      professor_id = request.headers.get('id')
+      data = request.json
+      professor_id = str(data.get('id'))
       if not professor_id:
         return {"status": 400, "error": "Invalid Professor ID"}, 400
       DELETE_FROM_WHERE("login", "id=" + professor_id)
@@ -72,28 +74,30 @@ def professors():
 @application.route('/students', methods=['GET', 'POST', 'DELETE'])
 def students():
     if request.method == 'POST':
+        data = request.json
         student = {
-            "first_name": request.headers.get('firstname'),
-            "last_name": request.headers.get('lastname'),
-            "email": request.headers.get('email'),
-            "phone_number": request.headers.get('number'),
-            "dob": request.headers.get('dob'),
-            "sex": request.headers.get('sex'),
-            "major": request.headers.get('major')
+            "first_name": data.get('first_name'),
+            "last_name": data.get('last_name'),
+            "email": data.get('email'),
+            "phone_number": data.get('phone_number'),
+            "dob": data.get('dob'),
+            "sex": data.get('sex'),
+            "major": data.get('major')
         }
         student_login = {
-            "email": request.headers.get('email'),
-            "password": None if not request.headers.get('password') else hashlib.sha256(request.headers.get('password').encode('utf-8')).hexdigest()
+            "email": data.get('email'),
+            "password": None if not data.get('password') else hashlib.sha256(data.get('password').encode('utf-8')).hexdigest()
         }
         if None in student.values() or None in student_login.values():
-            return {"status": 400, "error": "Invalid header"}, 400
+            return {"status": 400, "error": "Invalid data"}, 400
         INSERT_INTO("student", student)
         inserted = SELECT_FROM_WHERE("*", "student", "1=1 ORDER BY student_id DESC LIMIT 1")[0]
         student_login["id"] = str(inserted.get("student_id"))
         INSERT_INTO("login", student_login)
         return inserted, 201
     elif request.method == 'DELETE':
-      student_id = request.headers.get('id')
+      data = request.json
+      student_id = str(data.get('id'))
       if not student_id:
         return {"status": 400, "error": "Invalid Student ID"}, 400
       DELETE_FROM_WHERE("login", "id=" + student_id)
@@ -101,10 +105,11 @@ def students():
 
 @application.route('/login', methods=['GET'])
 def login():
-    id = request.headers.get('id')
-    password = hashlib.sha256(request.headers.get('password').encode('utf-8')).hexdigest()
-    email = request.headers.get('email')
-    account_type = request.headers.get('accounttype')
+    data = request.json
+    id = str(data.get('id'))
+    password = hashlib.sha256(data.get('password').encode('utf-8')).hexdigest()
+    email = data.get('email')
+    account_type = data.get('account_type')
     where = ''
     if id and password:
         where = "login.id='" + id + "' AND password='" + password + "'"

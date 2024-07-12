@@ -61,11 +61,11 @@ GET /professors?q=John
 `POST /professors`
 Add a new professor.
 
-**Headers:**
-- `firstname`: First name of the professor.
-- `lastname`: Last name of the professor.
+**Request Body (JSON):**
+- `first_name`: First name of the professor.
+- `last_name`: Last name of the professor.
 - `email`: Email of the professor.
-- `number`: Phone number of the professor.
+- `phone_number`: Phone number of the professor.
 - `department`: Department of the professor.
 - `password`: Password for the professor's login.
 
@@ -76,18 +76,19 @@ Add a new professor.
 **Example:**
 ```
 POST /professors
-Headers: firstname=John,
-lastname=Doe,
-email=john.doe@example.com,
-number=1234567890,
-department=Math,
-password=securepassword
+Body: { 
+    "first_name": "John", 
+    "last_name": "Doe", 
+    "email": "john.doe@example.com", 
+    "phone_number": "1234567890",
+    "department": "CSC", 
+    "password": "securepassword" 
+ }
 ```
-
 `DELETE /professors` 
 Delete a professor.
 
-**Headers:**
+**Request Body (JSON):**
 - `id`: The ID of the professor to be deleted.
 
 **Responses:**
@@ -97,7 +98,9 @@ Delete a professor.
 **Example:**
 ```
 DELETE /professors
-Headers: id=100000
+Body: { 
+    "id": "10000" 
+}
 ```
 
 ### Students
@@ -105,11 +108,11 @@ Headers: id=100000
 `POST /students`
 Add a new student.
 
-**Headers:**
-- `firstname`: First name of the student.
-- `lastname`: Last name of the student.
+**Request Body (JSON):**
+- `first_name`: First name of the student.
+- `last_name`: Last name of the student.
 - `email`: Email of the student.
-- `number`: Phone number of the student.
+- `phone_number`: Phone number of the student.
 - `dob`: Date of birth of the student.
 - `sex`: Sex of the student.
 - `major`: Major of the student.
@@ -122,34 +125,37 @@ Add a new student.
 **Example:**
 ```
 POST /students
-Headers: firstname=Jane, 
-lastname=Doe, 
-email=jane.doe@example.com, 
-number=0987654321, 
-dob=1995-05-05, 
-sex=F, 
-major=CSC, 
-password=securepassword
+Body: { 
+    "first_name": "Jane", 
+    "last_name": "Doe", "email": 
+    "jane.doe@example.com", 
+    "phone_number": "0987654321", 
+    "dob": "1995-05-05", 
+    "sex": "F", 
+    "major": "CSC", 
+    "password": "securepassword" 
+}
 ```
 
 `DELETE /students`
 Delete a student.
 
-**Headers:**
+#### DELETE /students
+Delete a student.
+
+**Request Body (JSON):**
 - `id`: The ID of the student to be deleted.
 
 **Responses:**
 - `200 OK`: A JSON object with a success message.
-- `400 Bad Request`: A JSON object with an error message if the `id` header is missing.
-
-**Responses:**
-- `200 OK`: A JSON object with a success message.
-- `400 Bad Request`: A JSON object with an error message if the `id` header is missing.
+- `400 Bad Request`: A JSON object with an error message if the `id` field is missing.
 
 **Example:**
 ```
 DELETE /students
-Headers: id=10000000
+Body: { 
+    "id": "1" 
+}
 ```
 
 ### Login
@@ -157,21 +163,23 @@ Headers: id=10000000
 `GET /login`
 Authenticate a user (student or professor).
 
-**Headers:**
+**Request Body (JSON):**
 - `id` (optional): The ID of the user.
 - `password`: The password of the user.
 - `email` (optional): The email of the user.
-- `accounttype`: The type of account (`student` or `professor`).
+- `account_type`: The type of account (`student` or `professor`).
 
 **Responses:**
 - `200 OK`: A JSON object of the authenticated user.
-- `400 Bad Request`: A JSON object with an error message if required headers are missing.
+- `400 Bad Request`: A JSON object with an error message if required fields are missing.
 - `401 Unauthorized`: A JSON object with an error message if login credentials are invalid.
 
 **Example:**
 ```
 GET /login
-Headers: email=jane.doe@example.com, 
-password=securepassword, 
-accounttype=student
+Body: { 
+    "email": "jane.doe@example.com", 
+    "password": "securepassword", 
+    "account_type": "student" 
+}
 ```
