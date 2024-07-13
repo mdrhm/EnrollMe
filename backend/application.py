@@ -27,7 +27,6 @@ def sections():
         where = "professor_id = " + professor_id
  sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, CONCAT(subject, ' ', course.course_level) AS course_code, section.end_date, section.instruction_mode, section.start_date", "course INNER JOIN section ON course.course_id = section.course_id", where)
 
-
     for i in range(len(sections)):
         sections[i]["days"] = SELECT_FROM_WHERE("day, start_time, end_time", "section", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "section", "section_id = " + str(sections[i]["section_id"]))))
@@ -158,4 +157,3 @@ def login():
         return {"status": 401, "error": "Invalid login credentials"}, 401
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True, port=8000)
-
