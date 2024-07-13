@@ -25,12 +25,13 @@ def sections():
         where =  "section.course_id = " + course_id
     elif professor_id:
         where = "professor_id = " + professor_id
-    sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, CONCAT(course_subject, ' ', course.course_level) AS course_code, section.end_date, section.instruction_mode, section.start_date", "course INNER JOIN section ON course.course_id = section.course_id", where)
+ sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, CONCAT(subject, ' ', course.course_level) AS course_code, section.end_date, section.instruction_mode, section.start_date", "course INNER JOIN section ON course.course_id = section.course_id", where)
+
 
     for i in range(len(sections)):
         sections[i]["days"] = SELECT_FROM_WHERE("day, start_time, end_time", "section", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "section", "section_id = " + str(sections[i]["section_id"]))))
-        sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.name), professor.id", "professor INNER JOIN section ON section.professor_id = professor.id", "section_id = " + str(sections[i]["section_id"]))
+        sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN section ON section.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
     return sections
 
 @application.route('/professors', methods=['GET', 'POST', 'DELETE', 'PUT'])
