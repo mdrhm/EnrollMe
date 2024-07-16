@@ -252,9 +252,9 @@ def enrollments():
                 return {"status": 401, "error": "Invalid Student ID"}, 401
             schedule =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', semester.year) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN enrollment ON enrollment.section_id=section.section_id INNER JOIN semester ON section.semester_id=semester.semester_id", "enrollment.student_id=" + id)
             for i in range(len(schedule)):
-                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "section", "section_id = " + str(schedule[i]["section_id"]))
-                schedule[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "section", "section_id = " + str(schedule[i]["section_id"]))))
-                schedule[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN section ON section.professor_id = professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
+                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(schedule[i]["section_id"]))
+                schedule[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(schedule[i]["section_id"]))))
+                schedule[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["enrolled"] = SELECT_FROM_WHERE("COUNT(*)", "enrollment", "section_id = " + str(schedule[i]["section_id"]))[0]["COUNT(*)"]
             return schedule
         case 'POST':
@@ -277,7 +277,7 @@ def enrollments():
             sections = list(map(lambda x: str(x), body.get('sections')))
             sections_str = "('')" if not sections else "(" + ", ".join(sections) + ")"
             DELETE_FROM_WHERE("enrollment", "student_id = " + student_id + " AND NOT section_id in " + sections_str)
-            already_enrolled = list(map(lambda x: str(x["section_id"]), SELECT_FROM_WHERE("section_id","enrollment", "student_id = " + student_id + " AND NOT section_id in " + sections_str)))
+            already_enrolled = list(map(lambda x: str(x["section_id"]), SELECT_FROM_WHERE("section_id","enrollment", "student_id = " + student_id + " AND section_id in " + sections_str)))
             sections_to_add = filter(lambda x: x not in already_enrolled, sections)
             for section in sections_to_add:
                 INSERT_INTO("enrollment", {"student_id": student_id,
