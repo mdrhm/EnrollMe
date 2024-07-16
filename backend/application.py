@@ -14,6 +14,22 @@ def courses():
             elif query:
                 return SELECT_FROM_WHERE("*", "course", "CONCAT(subject, course_level, name) LIKE '%" + query.replace(" ", "%") + "%'")
             return SELECT_FROM_WHERE("*", "course")
+        case 'POST':
+            body = request.json
+            last_course_id = SELECT_FROM_WHERE("MAX(course_id)", "course")[0]["MAX(course_id)"]
+            body["course_id"] = 1 if str(last_course_id) == 'None' else last_course_id + 1
+            return INSERT_INTO("course", body)
+        case 'DELETE':
+            body = request.json
+            course_id = body.get('course_id')
+            if not course_id:
+                return {"status": 400, "error": "Invalid Course ID"}, 400
+            return DELETE_FROM_WHERE('course', 'course_id=' + str(course_id))
+        case 'PUT':
+            body = request.json
+            course_id = str(body.get('course_id'))
+            del body['course_id']
+            return UPDATE_SET_WHERE("course", body, "course_id = " + course_id)[0]
 
 @application.route('/sections', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def sections():
@@ -31,29 +47,41 @@ def sections():
                 where = "professor_id = " + professor_id
             sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', semester.year) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id", where)
             for i in range(len(sections)):
-                sections[i]["days"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "section", "section_id = " + str(sections[i]["section_id"]))
-                sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "section", "section_id = " + str(sections[i]["section_id"]))))
-                sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN section ON section.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
+                sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
+                sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
+                sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["roster"] = SELECT_FROM_WHERE("DISTINCT(student.student_id), first_name, last_name, email, major", "student INNER JOIN enrollment on student.student_id=enrollment.student_id INNER JOIN section ON enrollment.section_id=section.section_id", "section.section_id=" + str(sections[i]["section_id"]))
                 sections[i]["enrolled"] = len(sections[i]["roster"])
             return sections
         case 'POST':
             body = request.json
-            section_id = 1000 if str(SELECT_FROM_WHERE("MAX(section_id)", "section")[0]["MAX(section_id)"]) == 'None' else SELECT_FROM_WHERE("MAX(section_id)", "section")[0]["MAX(section_id)"] + 1
-            for day in body.get("days"):
-                section = {
-                    "section_id": section_id,
-                    "course_id": body.get('course_id'),
+            last_section_id = SELECT_FROM_WHERE("MAX(section_id)", "section")[0].get("MAX(section_id)")
+            body["section_id"] = 1000 if str(last_section_id) == 'None' else last_section_id + 1
+            section = {
+                "section_id": body.get('section_id'),
+                "course_id": body.get('course_id'),
+                "max_capacity": body.get('max_capacity'),
+                "semester_id": body.get('semester_id'),
+                "instruction_mode": body.get('instruction_mode'),
+            }
+            for key in section.keys():
+                if not section.get(key):
+                    del section[key]
+            INSERT_INTO("section", section)
+            section_id = SELECT_FROM_WHERE("MAX(section_id)", "section")[0]["MAX(section_id)"]
+            for day in body.get("meeting_times"):
+                meeting = {
+                    "section_id": body.get('section_id'),
                     "day": day.get("day"),
                     "start_time": day.get("start_time"),
                     "end_time": day.get("end_time"),
-                    "max_capacity": body.get('max_capacity'),
                     "professor_id": day.get('professor_id'),
-                    "semester_id": body.get('semester_id'),
-                    "instruction_mode": body.get('instruction_mode'),
                     "room": day.get('room')
                 }
-                INSERT_INTO('section', section)
+                for key in meeting.keys():
+                    if not meeting.get(key):
+                        del meeting[key]
+                INSERT_INTO('meeting', meeting)
             return {"message": "Insert Successful", "inserted": body}
         case 'DELETE':
             body = request.json
@@ -68,7 +96,7 @@ def sections():
                 return {"status": 400, "error": "Invalid Section"}, 400
             enrolled_students = SELECT_FROM_WHERE("*", "enrollment", "section_id=" + str(section_id))
             DELETE_FROM_WHERE("section", "section_id=" + str(section_id))
-            for day in body.get("days"):
+            for day in body.get("meeting_times"):
                 section = {
                     "section_id": body.get('section_id'),
                     "course_id": body.get('course_id'),
@@ -81,6 +109,9 @@ def sections():
                     "instruction_mode": body.get('instruction_mode'),
                     "room": day.get('room')
                 }
+                for key in section.keys():
+                    if not section[key]:
+                        del section[key]
                 INSERT_INTO('section', section)
             for student in enrolled_students:
                 INSERT_INTO("enrollment", student)
@@ -118,7 +149,7 @@ def professors():
             return inserted, 201
         case 'DELETE':
           body = request.json
-          professor_id = str(body.get('id'))
+          professor_id = str(body.get('professor_id'))
           if not professor_id:
             return {"status": 400, "error": "Invalid Professor ID"}, 400
           DELETE_FROM_WHERE("login", "id=" + professor_id)
@@ -169,7 +200,7 @@ def students():
             return inserted, 201
         case 'DELETE':
           body = request.json
-          student_id = str(body.get('id'))
+          student_id = str(body.get('student_id'))
           if not student_id:
             return {"status": 400, "error": "Invalid Student ID"}, 400
           DELETE_FROM_WHERE("login", "id=" + student_id)
@@ -212,7 +243,7 @@ def login():
                 return {"status": 401, "error": "Invalid login credentials"}, 401
             return user[0]
 
-@application.route('/enrollments', methods=['GET', 'POST', 'DELETE'])
+@application.route('/enrollments', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def enrollments():
     match request.method:
         case 'GET':
@@ -221,7 +252,7 @@ def enrollments():
                 return {"status": 401, "error": "Invalid Student ID"}, 401
             schedule =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', semester.year) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN enrollment ON enrollment.section_id=section.section_id INNER JOIN semester ON section.semester_id=semester.semester_id", "enrollment.student_id=" + id)
             for i in range(len(schedule)):
-                schedule[i]["days"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "section", "section_id = " + str(schedule[i]["section_id"]))
+                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "section", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "section", "section_id = " + str(schedule[i]["section_id"]))))
                 schedule[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN section ON section.professor_id = professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["enrolled"] = SELECT_FROM_WHERE("COUNT(*)", "enrollment", "section_id = " + str(schedule[i]["section_id"]))[0]["COUNT(*)"]
@@ -240,6 +271,19 @@ def enrollments():
             student_id = str(body.get("student_id"))
             section_id = str(body.get("section_id"))
             return DELETE_FROM_WHERE("enrollment", "student_id=" + student_id + " AND section_id=" + section_id)
+        case 'PUT':
+            body = request.json
+            student_id = str(body.get('student_id'))
+            sections = list(map(lambda x: str(x), body.get('sections')))
+            sections_str = "('')" if not sections else "(" + ", ".join(sections) + ")"
+            DELETE_FROM_WHERE("enrollment", "student_id = " + student_id + " AND NOT section_id in " + sections_str)
+            already_enrolled = list(map(lambda x: str(x["section_id"]), SELECT_FROM_WHERE("section_id","enrollment", "student_id = " + student_id + " AND NOT section_id in " + sections_str)))
+            sections_to_add = filter(lambda x: x not in already_enrolled, sections)
+            for section in sections_to_add:
+                INSERT_INTO("enrollment", {"student_id": student_id,
+                "section_id": section})
+            return {"message": "Schedule Updated Successful", "updated": body}
+
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True, port=8000)
