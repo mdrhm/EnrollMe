@@ -26,7 +26,7 @@ def SELECT_FROM_WHERE(s, f, w="1=1"):
 
 def INSERT_INTO(t, d):
     try:
-        cursor.execute("INSERT INTO " + t + "(" + ", ".join(list(d.keys())) + ") VALUES ('" + "', '".join(list(d.values())) + "');")
+        cursor.execute("INSERT INTO " + t + "(" + ", ".join(list(d.keys())) + ") VALUES ('" + "', '".join(list(map(lambda value: str(value), d.values()))) + "');")
         return {"message": "Insert Successful", "inserted": d}
     except Exception as error:
         return {"error": str(error)}
