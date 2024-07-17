@@ -44,8 +44,8 @@ def sections():
             elif course_id:
                 where =  "section.course_id = " + course_id
             elif professor_id:
-                where = "professor_id = " + professor_id
-            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', semester.year) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id", where)
+                where = "meeting.professor_id = " + professor_id
+            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', semester.year) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id INNER JOIN meeting ON section.section_id=meeting.section_id", where)
             for i in range(len(sections)):
                 sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
@@ -94,27 +94,23 @@ def sections():
             section_id = body.get('section_id')
             if not section_id:
                 return {"status": 400, "error": "Invalid Section"}, 400
-            enrolled_students = SELECT_FROM_WHERE("*", "enrollment", "section_id=" + str(section_id))
-            DELETE_FROM_WHERE("section", "section_id=" + str(section_id))
-            for day in body.get("meeting_times"):
-                section = {
-                    "section_id": body.get('section_id'),
-                    "course_id": body.get('course_id'),
-                    "day": day.get("day"),
-                    "start_time": day.get("start_time"),
-                    "end_time": day.get("end_time"),
-                    "max_capacity": body.get('max_capacity'),
-                    "professor_id": day.get('professor_id'),
-                    "semester_id": body.get('semester_id'),
-                    "instruction_mode": body.get('instruction_mode'),
-                    "room": day.get('room')
-                }
-                for key in section.keys():
-                    if not section[key]:
-                        del section[key]
-                INSERT_INTO('section', section)
-            for student in enrolled_students:
-                INSERT_INTO("enrollment", student)
+            if body.get('meeting_times'):
+                DELETE_FROM_WHERE("meeting", "section_id=" + str(section_id))
+                for day in body.get('meeting_times'):
+                    meeting = {
+                        "section_id": section_id,
+                        "day": day.get("day"),
+                        "start_time": day.get("start_time"),
+                        "end_time": day.get("end_time"),
+                        "professor_id": day.get('professor_id'),
+                        "room": day.get('room')
+                    }
+                    for key in meeting.keys():
+                        if not meeting[key]:
+                            del meeting[key]
+                    INSERT_INTO('meeting', meeting)
+                del body['meeting_times']
+            UPDATE_SET_WHERE("section", body, "section_id = " + str(section_id))
             return {"message": "Update Successful", "updated": body}
 @application.route('/professors', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def professors():
