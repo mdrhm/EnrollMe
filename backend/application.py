@@ -152,7 +152,7 @@ def professors():
           return DELETE_FROM_WHERE("professor", "professor_id=" + professor_id)
         case 'PUT':
             body = request.json
-            professor_id = str(body.get("id"))
+            professor_id = str(body.get("professor_id"))
             if not professor_id:
                 return {"status": 400, "error": "Invalid Professor ID"}, 400
             del body['id']
@@ -203,7 +203,7 @@ def students():
           return DELETE_FROM_WHERE("student", "student_id=" + student_id)
         case 'PUT':
             body = request.json
-            student_id = str(body.get("id"))
+            student_id = str(body.get("student_id"))
             if not student_id:
                 return {"status": 400, "error": "Invalid Student ID"}, 400
             del body['id']
