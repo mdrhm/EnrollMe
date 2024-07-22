@@ -395,7 +395,7 @@ Body: {
 
 ## Login
 
-`GET /login`
+`POST /login`
 Authenticate a user (student or professor).
 
 **Request Body (JSON):**
@@ -410,7 +410,7 @@ Authenticate a user (student or professor).
 
 **Examples:**
 ```
-GET /login
+POST /login
 Body: {
     "username": "mariajohnson@ccny.cuny.edu",
     "password": "hello123",

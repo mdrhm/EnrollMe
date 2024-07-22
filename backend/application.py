@@ -88,6 +88,7 @@ def sections():
             section_id = body.get('section_id')
             if not section_id:
                 return {"status": 400, "error": "Invalid Section ID"}, 400
+            DELETE_FROM_WHERE('meeting', 'section_id=' + str(section_id))
             return DELETE_FROM_WHERE('section', 'section_id=' + str(section_id))
         case 'PUT':
             body = request.json
@@ -223,7 +224,7 @@ def students():
 @application.route('/login', methods=['GET', 'POST'])
 def login():
     match request.method:
-        case 'GET':
+        case 'POST':
             body = request.json
             username = str(body.get('username'))
             password = hashlib.sha256(body.get('password').encode('utf-8')).hexdigest()
