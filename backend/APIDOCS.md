@@ -379,7 +379,7 @@ Update a student.
 ```
 PUT /students
 Body: {
-    "id": 10000001,
+    "student_id": 10000001,
     "first_name":"Maria",
     "last_name":"Johnson",
     "email":"mariajohnson@ccny.cuny.edu",
