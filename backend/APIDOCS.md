@@ -496,3 +496,20 @@ Body: {
     ]
 }
 ```
+
+## Download Roster
+
+`GET /roster`
+Download a professor's roster
+
+**Parameters:**
+- `id`: The ID of the professor.
+
+**Responses:**
+- `200 OK`: A CSV file of the students enrolled in the professor's class.
+- `400 Bad Request`: A JSON object with an error message if the `id` is missing.
+
+**Examples:**
+```
+GET /roster?id=10014
+```
