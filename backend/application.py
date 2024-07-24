@@ -278,8 +278,7 @@ def enrollments():
             already_enrolled = list(map(lambda x: str(x["section_id"]), SELECT_FROM_WHERE("section_id","enrollment", "student_id = " + student_id + " AND section_id in " + sections_str)))
             sections_to_add = filter(lambda x: x not in already_enrolled, sections)
             for section in sections_to_add:
-                INSERT_INTO("enrollment", {"student_id": student_id,
-                "section_id": section})
+                enroll_student(student_id, section, '')
             return {"message": "Schedule Updated Successful", "updated": body}
 
 

@@ -50,6 +50,6 @@ def enroll_student(student_id, section_id, status):
     try:
         args = [student_id, section_id, status]
         result_args = cursor.callproc('EnrollStudent', args)
-        return(result_args['@_EnrollStudent_arg3'])
+        return {"message": result_args['@_EnrollStudent_arg3']}
     except Exception as error:
         return {"error": str(error)}
