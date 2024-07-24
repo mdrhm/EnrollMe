@@ -45,3 +45,11 @@ def UPDATE_SET_WHERE(t, s, w):
         return SELECT_FROM_WHERE("*", t, w)
     except Exception as error:
         return {"error": str(error)}
+    
+def enroll_student(student_id, section_id, status):
+    try:
+        args = [student_id, section_id, status]
+        result_args = cursor.callproc('EnrollStudent', args)
+        return(result_args['@_EnrollStudent_arg3'])
+    except Exception as error:
+        return {"error": str(error)}

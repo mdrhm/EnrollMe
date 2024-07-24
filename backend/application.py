@@ -1,6 +1,6 @@
 from flask import Flask, request
 import hashlib
-from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE
+from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, enroll_student
 application = Flask(__name__)
 
 @application.route('/courses', methods=['GET', 'POST', 'DELETE', 'PUT'])
@@ -258,11 +258,12 @@ def enrollments():
             body = request.json
             enrollment = {
                 "student_id": str(body.get("student_id")),
-                "section_id": str(body.get("section_id"))
+                "section_id": str(body.get("section_id")),
+                "status": ''
             }
             if str(None) in enrollment.values():
                 return {"status": 400, "error": "Invalid body"}, 400
-            return INSERT_INTO("enrollment", enrollment)
+            return enroll_student(enrollment["student_id"], enrollment["section_id"], enrollment["status"])
         case 'DELETE':
             body = request.json
             student_id = str(body.get("student_id"))
