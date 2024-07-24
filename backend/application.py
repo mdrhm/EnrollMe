@@ -282,13 +282,13 @@ def enrollments():
             return {"message": "Schedule Updated Successful", "updated": body}
 
 
-@application.route('/download_roster', methods=['GET'])
+@application.route('/roster', methods=['GET'])
 def download_roster():
-    professor_id = request.args.get('professor_id')
-    if not professor_id:
+    id = request.args.get('id')
+    if not id:
         return {"status": 400, "error": "Invalid Professor ID"}, 400
 
-    data = retrieve_roster(professor_id)
+    data = retrieve_roster(id)
     if not data:
         return {"status": 400, "error": "Empty Roster"}, 400
 
