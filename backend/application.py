@@ -1,6 +1,6 @@
-from flask import Flask, request
+from flask import Flask, Response, request
 import hashlib
-from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE
+from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, generate_csv, retrieve_roster
 application = Flask(__name__)
 
 @application.route('/courses', methods=['GET', 'POST', 'DELETE', 'PUT'])
@@ -281,6 +281,23 @@ def enrollments():
                 "section_id": section})
             return {"message": "Schedule Updated Successful", "updated": body}
 
+
+@application.route('/download_roster', methods=['GET'])
+def download_roster():
+    professor_id = request.args.get('professor_id')
+    if not professor_id:
+        return {"status": 400, "error": "Invalid Professor ID"}, 400
+
+    data = retrieve_roster(professor_id)
+    if not data:
+        return {"status": 400, "error": "Empty Roster"}, 400
+
+    csv_data = generate_csv(data)
+    return Response(
+        csv_data,
+        mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=roster.csv"}
+    )
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True, port=8000)
