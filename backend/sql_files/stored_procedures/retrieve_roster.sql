@@ -2,7 +2,7 @@ DELIMITER //
 
 CREATE PROCEDURE RetrieveRoster (
 	IN p_professor_id INT,
-	IN p_section_id INT
+    	IN p_section_id INT
 )
 
 BEGIN
@@ -14,7 +14,8 @@ BEGIN
 	JOIN meeting ON meeting.section_id = section.section_id
 	JOIN professor ON meeting.professor_id = professor.professor_id
 	WHERE professor.professor_id = p_professor_id
-    AND enrollment.section_id = p_section_id;
+    	AND enrollment.section_id = p_section_id
+    	ORDER BY student.last_name, student.first_name;
 
 END //
 
