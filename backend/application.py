@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, session, redirect
+from flask import Flask, request, render_template, session, redirect, Response
 import os
 import hashlib
 from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, enroll_student, generate_csv, retrieve_roster
@@ -303,15 +303,15 @@ def download_roster():
     section_id = request.args.get("section")
     if not section_id:
         return {"status": 400, "error": "Invalid Section ID"}, 400
+    if not professor_id == str(session.get('id')):
+        return {"status": 400, "error": "Professor ID not authenticated"}, 400
     data = retrieve_roster(professor_id, section_id)
-    if not data:
-        return {"status": 400, "error": "Empty Roster"}, 400
-
+    course_code = SELECT_FROM_WHERE("CONCAT(subject, '_', course_level) as course_code", "course INNER JOIN section ON section.course_id=course.course_id", "section.section_id=" + section_id)[0]["course_code"]
     csv_data = generate_csv(data)
     return Response(
         csv_data,
         mimetype='text/csv',
-        headers={"Content-Disposition": "attachment;filename=roster.csv"}
+        headers={"Content-Disposition": "attachment;filename=" + course_code + "_" + section_id + "_Roster.csv"}
     )
 
 @application.route('/')

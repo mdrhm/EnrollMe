@@ -1,11 +1,11 @@
 <nav>
     <div>
-        <img src="/static/logo.svg" class="logo">
+        <img src="/static/images/logo.svg" class="logo">
         <h1>{{ page_title }}</h1>
     </div>
     <div>
-        {% if page_title == 'MyDashboard' %}
-        <img src="/static/ai.png" class="ai-logo">
+        {% if page_title == 'MyDashboard' and account_type == 'student' %}
+        <img src="/static/images/ai.png" class="ai-logo">
         <div class="hidden ai-container">
             <div class="ai-div">
                 <h4>How may I assist you today?</h4><div class="ai-conversation"></div>
@@ -13,13 +13,13 @@
                     <button type="submit">Send</button></form></div>
         </div>
         {% endif %}
-        <img src="/static/settings.png" class="settings-logo">
+        <img src="/static/images/settings.png" class="settings-logo">
 
-        <img src="/static/logout.png" class="logout-logo"></div>
+        <img src="/static/images/logout.png" class="logout-logo"></div>
 </nav>
 <div class = "settings-div-outer hidden">
 <div class = "settings-div">
-    <div><img src="/static/close.png" class="close-setting"></div>
+    <div><img src="/static/images/close.png" class="close-setting"></div>
 <h2>Settings</h2>
     <form id="settings-form">
         {% if account_type == 'professor' %}
@@ -47,12 +47,12 @@
             <div class = "change-password-div hidden">
                 <div>
                     <label for="old_password">Old Password:</label>
-                    <div class="password"><input type="password" id="old_password" name="old_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password">
+                    <div class="password"><input type="password" id="old_password" name="old_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
                     </div>
                 </div>
                 <div>
                     <label for="new_password">New Password:</label>
-                    <div class="password"><input type="password" id="new_password" name="new_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password">
+                    <div class="password"><input type="password" id="new_password" name="new_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
                     </div>
                 </div>
                 <p class ="form-error-message new-password-error hidden">New Password has to have at least 8 characters, 1 letter, 1 number, and 1 special character</p>
@@ -144,12 +144,12 @@
             <div class = "change-password-div hidden">
                 <div>
                 <label for="old_password">Old Password:</label>
-                    <div class="password"><input type="password" id="old_password" name="old_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password">
+                    <div class="password"><input type="password" id="old_password" name="old_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
                     </div>
                 </div>
                 <div>
                     <label for="new_password">New Password:</label>
-                    <div class="password"><input type="password" id="new_password" name="old_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password">
+                    <div class="password"><input type="password" id="new_password" name="old_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
                     </div>
                 </div>
                 <p class ="form-error-message new-password-error hidden">New Password has to have at least 8 characters, 1 letter, 1 number, and 1 special character</p>

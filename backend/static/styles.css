@@ -199,7 +199,7 @@ input#search-bar::-webkit-search-cancel-button{
     height: 1em;
     width: 1em;
     border-radius: 50em;
-    background: url("/static/close.png") no-repeat 50% 50%;
+    background: url("/static/images/close.png") no-repeat 50% 50%;
     background-size: contain;
     opacity: 1;
     filter: invert(1);
@@ -579,7 +579,7 @@ form#section-form {
 
 input[type="dropdown"] {
     caret-color: transparent;
-    background-image: url("/static/dropdown.png");
+    background-image: url("/static/images/dropdown.png");
     background-size: 20px 20px;
     background-repeat: no-repeat;
     background-position: bottom 7px right 7px;
@@ -1069,4 +1069,39 @@ div:has(> .loader) {
 .schedule-course.enrolled {
     background: rgb(0 255 0 / 0.36);
     border: 1.5px solid #004000;
+}
+
+.section-actions > a > img {
+    height: 25px;
+    filter: invert(1);
+}
+
+.section-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+
+.section-actions > a {
+    width: 45px;
+    padding: 0px;
+    height: 45px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+}
+
+.edit-icon {
+    position: relative;
+    left: 2.2px;
+    bottom: 2px;
+}
+
+.section-header-1 > div:not(.section-actions) {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 3px;
 }

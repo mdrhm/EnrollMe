@@ -21,7 +21,7 @@ document.querySelector(".add-meeting-button").addEventListener("click", () => {
     new_meeting = document.createElement("tr")
     new_meeting.innerHTML = meetings.querySelector("tr:last-child").innerHTML
     new_meeting.removeChild(new_meeting.lastElementChild)
-    new_meeting.innerHTML += '<td><div><img src = "/static/delete.png" class="remove-meeting-button" onclick="this.parentElement.parentElement.remove()"></div></td>'
+    new_meeting.innerHTML += '<td><div><img src = "/static/images/delete.png" class="remove-meeting-button" onclick="this.parentElement.parentElement.remove()"></div></td>'
     meetings.appendChild(new_meeting)
     createDropDowns()
 })
