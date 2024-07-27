@@ -503,7 +503,8 @@ Body: {
 Download a professor's roster
 
 **Parameters:**
-- `id`: The ID of the professor.
+- `professor`: The ID of the professor.
+- `section`: The ID of the section.
 
 **Responses:**
 - `200 OK`: A CSV file of the students enrolled in the professor's class.
