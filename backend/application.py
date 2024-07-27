@@ -284,10 +284,10 @@ def enrollments():
 
 @application.route('/roster', methods=['GET'])
 def download_roster():
-    professor_id = request.args.get("professor_id")
+    professor_id = request.args.get("professor")
     if not professor_id:
         return {"status": 400, "error": "Invalid Professor ID"}, 400
-    section_id = request.args.get("section_id")
+    section_id = request.args.get("section")
     if not section_id:
         return {"status": 400, "error": "Invalid Section ID"}, 400
     data = retrieve_roster(professor_id, section_id)
