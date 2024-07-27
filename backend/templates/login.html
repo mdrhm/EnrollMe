@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/styles.css">
+    <title>Login - EnrollMe</title>
+    <link rel="icon" href="/static/logo.svg" sizes="any" type="image/svg+xml">
+</head>
+<div class="welcome-screen">
+    <img src="/static/logo.svg" class="logo">
+
+    <h1>Welcome back!</h1>
+    <p>Ready to create your perfect schedule for another great semester?</p></div>
+<body class="login-body">
+<div class = "login-div">
+<h2>Login</h2>
+<form id="loginForm">
+    <div><label for="account_type">I am a</label>
+        <div><input type="dropdown"  autocomplete="off" role="combobox" id="account_type" name="account_type" option_id="student">
+        <datalist id="account_types" role="listbox">
+            <option value="student">Student</option>
+            <option value="professor">Professor</option>
+        </datalist>
+        </div>
+    </div>
+    <div>
+    <label for="username">Email or ID:</label>
+    <input type="text" id="username" name="username">
+    </div>
+    <div>
+    <label for="password">Password:</label>
+        <div class="password"><input type="password" id="password" name="password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password">
+        </div>
+    </div>
+    <p class ="form-error-message login-error hidden">Invalid login credentials</p>
+    <button type="submit">Login</button>
+</form>
+    <div class="redirect-div">First time here? <a href="/register">Register here</a></div>
+</div>
+<script src="/static/scripts/components.js"></script>
+<script src = "/static/scripts/login.js">
+</script>
+</body>
+</html>

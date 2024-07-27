@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/styles.css">
+    <title>MyDashboard - EnrollMe</title>
+    <link rel="icon" href="/static/logo.svg" sizes="any" type="image/svg+xml">
+    <id>{{ id }}</id>
+    <account>{{ account_type }}</account>
+</head>
+<body class = "dashboard-body">
+{% include 'settings.html' %}
+<div class="add-section-container"><a class="add-section" href="/section/new">Add Section</a></div>
+<div id="sections"></div>
+</body>
+<script src="/static/scripts/components.js"></script>
+<script src="/static/scripts/settings.js"></script>
+<script src="/static/scripts/functions.js"></script>
+<script src="/static/scripts/dashboard.js"></script>
+</script>
+</html>

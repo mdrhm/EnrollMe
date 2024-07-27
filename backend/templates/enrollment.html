@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySchedule - EnrollMe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" href="/static/logo.svg" sizes="any" type="image/svg+xml">
+    <id>{{ id }}</id>
+    <account>{{ account_type }}</account>
+</head>
+<body class="student-dashboard-body">
+{% include 'settings.html' %}
+    <div class = "student-dashboard">
+    <div class = "student-dashboard-left">
+    <div class = "course-search-div">
+<!--        <input type="text" id="search-bar" placeholder="Search for courses...">-->
+<!--        <div class="search-results hidden">-->
+<!--            <div class="search-results-inner">-->
+<!--        </div>-->
+        <div><input autocomplete="off" type="search" id = "search-bar" role="combobox" name="account_type" placeholder="Search for courses..."  option_id="">
+            <div class="search-results hidden">
+                <div class="search-results-inner">
+                {% for course in courses %}
+                <div class="course" course_id="{{ course['course_id'] }}">
+                <h3>{{ course['subject'] }} {{ course['course_level'] }}</h3>
+                <p>{{ course["name"] }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            </div>
+        </div>
+    </div>
+        <div class = "courses-div"></div>
+    </div>
+
+    <div class="student-dashboard-right">
+        <div>
+            <p class="conflict-message"></p>
+        </div>
+        <div>
+            <p>Total Credits:</p>
+            <p class="credits">0.0</p>
+        </div>
+        <div>
+        <div class="calendar-days">
+            <p>Sun</p>
+            <p>Mon</p>
+            <p>Tue</p>
+            <p>Wed</p>
+            <p>Thu</p>
+            <p>Fri</p>
+            <p>Sat</p>
+        </div>
+        <div class="calendar-bottom">
+            <div class="schedule-times-div">
+                <p>8 AM</p>
+                <p>9:30 AM</p>
+                <p>11 AM</p>
+                <p>12:30 PM</p>
+                <p>2 PM</p>
+                <p>3:30 PM</p>
+                <p>5 PM</p>
+                <p>6:30 PM</p>
+                <p>8 PM</p>
+            </div>
+        <div id="calendar">
+        {% for i in range(56) %}
+        <div class="grid-item"></div>
+        {% endfor %}
+        <div class = "schedule-courses">
+        </div>
+        </div>
+        </div>
+
+        </div>
+        <button class="submit-enrollment">Enroll</button>
+    </div>
+    </div>
+    <script class = "dummy-script">
+        const coursesStr = `{{ courses }}`.replaceAll('&#39;', '"')
+        const sectionsStr = `{{ sections }}`.replaceAll('&#39;', '"')
+        const enrollmentStr = `{{ enrollments }}`.replaceAll('&#39;', '"')
+    </script>
+<script src="/static/scripts/components.js"></script>
+<script src="/static/scripts/settings.js"></script>
+<script src="/static/scripts/functions.js"></script>
+<script src="/static/scripts/enrollment.js"></script>
+</body>
+</html>

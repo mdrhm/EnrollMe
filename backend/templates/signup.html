@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/styles.css">
+    <link rel="icon" href="/static/logo.svg" sizes="any" type="image/svg+xml">
+    <title>Sign Up - EnrollMe</title>
+</head>
+<body class="signup-body">
+<div class="welcome-screen">
+    <img src="/static/logo.svg" class="logo">
+
+    <h1>Welcome to EnrollMe!</h1>
+    <p>Effortlessly Plan Your Perfect Semester</p></div>
+<div class="signup-div">
+<h2>Sign Up</h2>
+<div style="width: 66%"><label for="account_type">I am a </label>
+    <div><input type="dropdown"  autocomplete="off" role="combobox" id="account_type" name="account_type" option_id="student">
+        <datalist id="account_types" role="listbox">
+            <option value="student">Student</option>
+            <option value="professor">Professor</option>
+        </datalist>
+    </div>
+</div>
+
+<form id="professor-form" class = "hidden">
+    <div>
+    <label for="professor_first_name">First Name:</label>
+    <input type="text" id="professor_first_name" name="professor_first_name">
+    </div>
+    <p class="form-error-message hidden professor_first_name">This field is required</p>
+    <div><label for="professor_last_name">Last Name:</label>
+    <input type="text" id="professor_last_name" name="professor_last_name">
+    </div>
+    <p class="form-error-message hidden professor_last_name">This field is required</p>
+    <div>
+    <label for="professor_email">Email:</label>
+    <input type="text" id="professor_email" name="professor_email">
+    </div>
+    <p class="form-error-message hidden professor_email">That is not a valid email address</p>
+    <div>
+    <label for="professor_password">Password:</label>
+        <div class="password"><input type="password" id="professor_password" name="professor_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password">
+        </div>
+    </div>
+    <p class="form-error-message hidden professor_password">Password has to have at least 8 characters, 1 letter, 1 number, and 1 special character</p>
+    <div>
+    <label for="professor_confirm_password">Confirm Password:</label>
+        <div class="password"><input type="password" id="professor_confirm_password" name="professor_confirm_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password">
+        </div>
+    </div>
+    <p class="form-error-message hidden professor_confirm_password">Your passwords didn't match</p>
+    <div>
+    <label for="professor_department">Department:</label>
+        <div><input type="dropdown"  autocomplete="off" role="combobox" id="professor_department" name="professor_department" option_id="">
+            <datalist id="professor_departments" role="listbox">
+                <option value="ACCT">Accounting</option>
+                <option value="ANTH">Anthropology</option>
+                <option value="ARCH">Architecture</option>
+                <option value="ART">Art</option>
+                <option value="BIOC">Biochemistry</option>
+                <option value="BIOL">Biology</option>
+                <option value="BUS">Business Administration</option>
+                <option value="CHEM">Chemistry</option>
+                <option value="COMM">Communications</option>
+                <option value="CSC">Computer Science</option>
+                <option value="CJ">Criminal Justice</option>
+                <option value="ECON">Economics</option>
+                <option value="EDU">Education</option>
+                <option value="EE">Electrical Engineering</option>
+                <option value="ENG">English</option>
+                <option value="ENVS">Environmental Science</option>
+                <option value="FIN">Finance</option>
+                <option value="GEOG">Geography</option>
+                <option value="GEOL">Geology</option>
+                <option value="GD">Graphic Design</option>
+                <option value="HIST">History</option>
+                <option value="HM">Hospitality Management</option>
+                <option value="HR">Human Resources</option>
+                <option value="IT">Information Technology</option>
+                <option value="IR">International Relations</option>
+                <option value="JOUR">Journalism</option>
+                <option value="LAW">Law</option>
+                <option value="MKT">Marketing</option>
+                <option value="MATH">Mathematics</option>
+                <option value="ME">Mechanical Engineering</option>
+                <option value="MUS">Music</option>
+                <option value="NURS">Nursing</option>
+                <option value="PHIL">Philosophy</option>
+                <option value="PHYS">Physics</option>
+                <option value="PS">Political Science</option>
+                <option value="PSY">Psychology</option>
+                <option value="PA">Public Administration</option>
+                <option value="PH">Public Health</option>
+                <option value="SW">Social Work</option>
+                <option value="SOC">Sociology</option>
+                <option value="SE">Software Engineering</option>
+                <option value="SPAN">Spanish</option>
+                <option value="STAT">Statistics</option>
+                <option value="THEA">Theatre</option>
+                <option value="UND">Undeclared</option>
+            </datalist>
+        </div>
+    </div>
+    <p class="form-error-message hidden professor_department">This field is required</p>
+    <div>
+    <label for="professor_phone_number">Phone Number:</label>
+    <input type="tel" id="professor_phone_number" name="professor_phone_number">
+    </div>
+    <p class="form-error-message hidden professor_phone_number">That's not a valid phone number</p>
+    <button type="submit">Sign Up</button>
+</form>
+
+<form id="student-form">
+    <div>
+    <label for="student_first_name">First Name:</label>
+    <input type="text" id="student_first_name" name="student_first_name">
+    </div>
+    <p class="form-error-message hidden student_first_name">This field is required</p>
+    <div>
+    <label for="student_last_name">Last Name:</label>
+    <input type="text" id="student_last_name" name="student_last_name">
+    </div>
+    <p class="form-error-message hidden student_last_name">This field is required</p>
+    <div>
+    <label for="student_email">Email:</label>
+    <input type="email" id="student_email" name="student_email">
+    </div>
+    <p class="form-error-message hidden student_email">That is not a valid email address</p>
+    <div>
+    <label for="student_password">Password:</label>
+        <div class="password"><input type="password" id="student_password" name="student_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password"></div>
+    </div>
+    <p class="form-error-message hidden student_password">Password has to have at least 8 characters, 1 letter, 1 number, and 1 special character</p>
+    <div>
+        <label for="student_confirm_password">Confirm Password:</label>
+        <div class="password"><input type="password" id="student_confirm_password" name="student_confirm_password"><img src="/static/hide.png" class="hide-password hidden"><img src="/static/visible.png" class="show-password"></div>
+    </div>
+    <p class="form-error-message hidden student_confirm_password">Your passwords didn't match</p>
+    <div>
+    <label for="student_major">Major:</label>
+        <div><input type="dropdown"  autocomplete="off" role="combobox" id="student_major" name="student_major" option_id="">
+            <datalist id="student_majors" role="listbox">
+                <option value="ACCT">Accounting</option>
+                <option value="ANTH">Anthropology</option>
+                <option value="ARCH">Architecture</option>
+                <option value="ART">Art</option>
+                <option value="BIOC">Biochemistry</option>
+                <option value="BIOL">Biology</option>
+                <option value="BUS">Business Administration</option>
+                <option value="CHEM">Chemistry</option>
+                <option value="COMM">Communications</option>
+                <option value="CSC">Computer Science</option>
+                <option value="CJ">Criminal Justice</option>
+                <option value="ECON">Economics</option>
+                <option value="EDU">Education</option>
+                <option value="EE">Electrical Engineering</option>
+                <option value="ENG">English</option>
+                <option value="ENVS">Environmental Science</option>
+                <option value="FIN">Finance</option>
+                <option value="GEOG">Geography</option>
+                <option value="GEOL">Geology</option>
+                <option value="GD">Graphic Design</option>
+                <option value="HIST">History</option>
+                <option value="HM">Hospitality Management</option>
+                <option value="HR">Human Resources</option>
+                <option value="IT">Information Technology</option>
+                <option value="IR">International Relations</option>
+                <option value="JOUR">Journalism</option>
+                <option value="LAW">Law</option>
+                <option value="MKT">Marketing</option>
+                <option value="MATH">Mathematics</option>
+                <option value="ME">Mechanical Engineering</option>
+                <option value="MUS">Music</option>
+                <option value="NURS">Nursing</option>
+                <option value="PHIL">Philosophy</option>
+                <option value="PHYS">Physics</option>
+                <option value="PS">Political Science</option>
+                <option value="PSY">Psychology</option>
+                <option value="PA">Public Administration</option>
+                <option value="PH">Public Health</option>
+                <option value="SW">Social Work</option>
+                <option value="SOC">Sociology</option>
+                <option value="SE">Software Engineering</option>
+                <option value="SPAN">Spanish</option>
+                <option value="STAT">Statistics</option>
+                <option value="THEA">Theatre</option>
+                <option value="UND">Undeclared</option>
+            </datalist>
+        </div>
+    </div>
+    <p class="form-error-message hidden student_major">This field is required</p>
+    <div>
+    <label for="student_phone_number">Phone Number:</label>
+    <input type="tel" id="student_phone_number" name="student_phone_number">
+    </div>
+    <p class="form-error-message hidden student_phone_number">That's not a valid phone number</p>
+    <div>
+    <label for="student_dob">Date of Birth:</label>
+    <input type="date" id="student_dob" name="student_dob">
+    </div>
+    <p class="form-error-message hidden student_dob">This field is required</p>
+    <div>
+    <label for="student_sex">Sex:</label>
+        <div><input type="dropdown"  autocomplete="off" role="combobox" id="student_sex" name="student_sex" option_id="">
+            <datalist id="student_sexes" role="listbox">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </datalist>
+        </div>
+    </div>
+    <p class="form-error-message hidden student_sex">This field is required</p>
+    <button type="submit">Sign Up</button>
+</form>
+    <div class="redirect-div">Already have an account? <a href="/">Log in Here</a></div>
+</div>
+<script src="/static/scripts/components.js"></script>
+<script src="/static/scripts/functions.js"></script>
+<script src="/static/scripts/signup.js"></script>
+</body>
+</html>
