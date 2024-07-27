@@ -379,7 +379,8 @@ Update a student.
 ```
 PUT /students
 Body: {
-    "id": 10000001,
+    "student_id": 10000001,
+>>>>>>> main
     "first_name":"Maria",
     "last_name":"Johnson",
     "email":"mariajohnson@ccny.cuny.edu",
@@ -395,7 +396,7 @@ Body: {
 
 ## Login
 
-`GET /login`
+`POST /login`
 Authenticate a user (student or professor).
 
 **Request Body (JSON):**
@@ -410,7 +411,7 @@ Authenticate a user (student or professor).
 
 **Examples:**
 ```
-GET /login
+POST /login
 Body: {
     "username": "mariajohnson@ccny.cuny.edu",
     "password": "hello123",
@@ -495,4 +496,22 @@ Body: {
         1001
     ]
 }
+```
+
+## Download Roster
+
+`GET /roster`
+Download a professor's roster
+
+**Parameters:**
+- `professor`: The ID of the professor.
+- `section`: The ID of the section.
+
+**Responses:**
+- `200 OK`: A CSV file of the students enrolled in the professor's class.
+- `400 Bad Request`: A JSON object with an error message if the `id` is missing.
+
+**Examples:**
+```
+GET /roster?id=10014
 ```

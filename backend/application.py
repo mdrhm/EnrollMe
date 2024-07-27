@@ -1,8 +1,9 @@
 from flask import Flask, request, render_template, session, redirect
 import os
 import hashlib
-from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE
+from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, enroll_student, generate_csv, retrieve_roster
 from ai import generate_course
+
 application = Flask(__name__)
 application.config["SESSION_PERMANENT"] = False
 application.secret_key = os.urandom(24)
@@ -51,7 +52,7 @@ def sections():
                 where = "meeting.professor_id = " + professor_id
             sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id INNER JOIN meeting ON section.section_id=meeting.section_id", where)
             for i in range(len(sections)):
-                sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
+                sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, CONCAT(first_name, ' ', last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
                 sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["roster"] = SELECT_FROM_WHERE("DISTINCT(student.student_id), first_name, last_name, email, major", "student INNER JOIN enrollment on student.student_id=enrollment.student_id INNER JOIN section ON enrollment.section_id=section.section_id", "section.section_id=" + str(sections[i]["section_id"]))
@@ -159,22 +160,22 @@ def professors():
           return DELETE_FROM_WHERE("professor", "professor_id=" + professor_id)
         case 'PUT':
             body = request.json
-            professor_id = body.get("professor_id")
+            professor_id = str(body.get("professor_id"))
             if not professor_id:
                 return {"status": 400, "error": "Invalid Professor ID"}, 400
             del body['professor_id']
             if body.get('new_password'):
-                if len(SELECT_FROM_WHERE("professor_id", "login", "professor_id = " + str(professor_id) + " AND password ='" + hashlib.sha256(body.get('old_password').encode('utf-8')).hexdigest() + "'")) == 0:
+                if len(SELECT_FROM_WHERE("professor_id", "login", "professor_id = " + professor_id + " AND password ='" + hashlib.sha256(body.get('old_password').encode('utf-8')).hexdigest() + "'")) == 0:
                     return {"status": 404, "error": "Current password doesn't match our records"}, 404
-                password_updated = UPDATE_SET_WHERE("login", {"password" : hashlib.sha256(body.get('new_password').encode('utf-8')).hexdigest()}, "professor_id = " + str(professor_id))[0]
+                password_updated = UPDATE_SET_WHERE("login", {"password" : hashlib.sha256(body.get('new_password').encode('utf-8')).hexdigest()}, "professor_id = " + professor_id)[0]
                 del body['old_password']
                 del body['new_password']
                 del password_updated['password']
                 if len(body) == 0:
                     return password_updated
             if body.get('email'):
-                UPDATE_SET_WHERE("login", {"email" : body.get('email')}, "professor_id = " + str(professor_id))
-            return UPDATE_SET_WHERE("professor", body, "professor_id = " + str(professor_id))[0]
+                UPDATE_SET_WHERE("login", {"email" : body.get('email')}, "professor_id = " + professor_id)
+            return UPDATE_SET_WHERE("professor", body, "professor_id = " + professor_id)[0]
 
 @application.route('/students', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def students():
@@ -205,11 +206,11 @@ def students():
             return inserted, 201
         case 'DELETE':
           body = request.json
-          student_id = body.get('student_id')
+          student_id = str(body.get('student_id'))
           if not student_id:
             return {"status": 400, "error": "Invalid Student ID"}, 400
-          DELETE_FROM_WHERE("login", "student_id=" + str(student_id))
-          return DELETE_FROM_WHERE("student", "student_id=" + str(student_id))
+          DELETE_FROM_WHERE("login", "student_id=" + student_id)
+          return DELETE_FROM_WHERE("student", "student_id=" + student_id)
         case 'PUT':
             body = request.json
             student_id = str(body.get("student_id"))
@@ -219,14 +220,14 @@ def students():
             if body.get('new_password'):
                 if len(SELECT_FROM_WHERE("student_id", "login", "student_id = " + student_id + " AND password ='" + hashlib.sha256(body.get('old_password').encode('utf-8')).hexdigest() + "'")) == 0:
                     return {"status": 404, "error": "Current password doesn't match our records"}, 404
-                password_updated = UPDATE_SET_WHERE("login", {"password" : hashlib.sha256(body.get('new_password').encode('utf-8')).hexdigest()}, "student_id = " + str(student_id))[0]
+                password_updated = UPDATE_SET_WHERE("login", {"password" : hashlib.sha256(body.get('new_password').encode('utf-8')).hexdigest()}, "student_id = " + student_id)[0]
                 del body['old_password']
                 del body['new_password']
                 del password_updated['password']
                 if len(body) == 0:
                     return password_updated
             if body.get('email'):
-                UPDATE_SET_WHERE("login", {"email" : body.get('email')}, "id = " + student_id)
+                UPDATE_SET_WHERE("login", {"email" : body.get('email')}, "student_id = " + student_id)
             return UPDATE_SET_WHERE("student", body, "student_id = " + student_id)[0]
 
 @application.route('/login', methods=['GET', 'POST'])
@@ -261,7 +262,7 @@ def enrollments():
                 return {"status": 401, "error": "Invalid Student ID"}, 401
             schedule =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN enrollment ON enrollment.section_id=section.section_id INNER JOIN semester ON section.semester_id=semester.semester_id", "enrollment.student_id=" + id)
             for i in range(len(schedule)):
-                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(schedule[i]["section_id"]))
+                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, CONCAT(professor.first_name, ' ', professor.last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(schedule[i]["section_id"]))))
                 schedule[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["enrolled"] = SELECT_FROM_WHERE("COUNT(*)", "enrollment", "section_id = " + str(schedule[i]["section_id"]))[0]["COUNT(*)"]
@@ -270,11 +271,12 @@ def enrollments():
             body = request.json
             enrollment = {
                 "student_id": str(body.get("student_id")),
-                "section_id": str(body.get("section_id"))
+                "section_id": str(body.get("section_id")),
+                "status": ''
             }
             if str(None) in enrollment.values():
                 return {"status": 400, "error": "Invalid body"}, 400
-            return INSERT_INTO("enrollment", enrollment)
+            return enroll_student(enrollment["student_id"], enrollment["section_id"], enrollment["status"])
         case 'DELETE':
             body = request.json
             student_id = str(body.get("student_id"))
@@ -289,9 +291,28 @@ def enrollments():
             already_enrolled = list(map(lambda x: str(x["section_id"]), SELECT_FROM_WHERE("section_id","enrollment", "student_id = " + student_id + " AND section_id in " + sections_str)))
             sections_to_add = filter(lambda x: x not in already_enrolled, sections)
             for section in sections_to_add:
-                INSERT_INTO("enrollment", {"student_id": student_id,
-                "section_id": section})
+                enroll_student(student_id, section, '')
             return {"message": "Schedule Updated Successful", "updated": body}
+
+
+@application.route('/roster', methods=['GET'])
+def download_roster():
+    professor_id = request.args.get("professor")
+    if not professor_id:
+        return {"status": 400, "error": "Invalid Professor ID"}, 400
+    section_id = request.args.get("section")
+    if not section_id:
+        return {"status": 400, "error": "Invalid Section ID"}, 400
+    data = retrieve_roster(professor_id, section_id)
+    if not data:
+        return {"status": 400, "error": "Empty Roster"}, 400
+
+    csv_data = generate_csv(data)
+    return Response(
+        csv_data,
+        mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=roster.csv"}
+    )
 
 @application.route('/')
 def index():
