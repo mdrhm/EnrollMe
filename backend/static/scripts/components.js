@@ -2,7 +2,7 @@ createDropDowns()
 createPasswords()
 
 function createDropDowns() {
-    const inputs = document.querySelectorAll('input[autocomplete="off"]')
+    const inputs = document.querySelectorAll('input[autocomplete="off"]:not(#search-bar)')
     const datalists = document.querySelectorAll("datalist")
     const inputDivs = document.querySelectorAll('div:has(> input[type="dropdown"])')
     for (let i = 0; i < inputs.length; i++) {
