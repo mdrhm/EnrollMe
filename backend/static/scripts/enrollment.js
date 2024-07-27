@@ -81,9 +81,9 @@ function removeCourse(course){
     let courseDiv = Array.from(document.querySelectorAll(".course-div")).filter((el) => {return el.contains(course)})[0]
     let course_id = courseDiv.getAttribute("course_id")
     console.log(course_id)
-    if (previousEnrollments.includes(enrollments[course_id]["section_id"])){
+    if (courseDiv.querySelector(".course-status").innerHTML !== "Added to Cart"){
         courseDiv.classList.add("dropped")
-        courseDiv.querySelector(".course-enrolled").innerHTML = "Dropping"
+        courseDiv.querySelector(".course-status").innerHTML = "Not Dropped Yet"
     }
     else{
         courseDiv.remove()
@@ -98,7 +98,7 @@ function addCourseBack(course){
     let section_id = courseDiv.querySelector(".course-section-div.selected").getAttribute("section_id")
     console.log(course_id)
     courseDiv.classList.remove("dropped")
-    courseDiv.querySelector(".course-enrolled").innerHTML = "Enrolled"
+    courseDiv.querySelector(".course-status").innerHTML = "Enrolled"
     enrollments[course_id] = sections.filter((s) => {return s["section_id"] === parseInt(section_id)})[0];
     displayEnrollments()
 }
@@ -145,8 +145,7 @@ function addCourse(course_id){
     let course = courses.filter((currentCourse) => {return currentCourse["course_id"] === course_id})[0]
     console.log(course)
     let course_sections = sections.filter((section) => {return section["course_id"] === course_id})
-    document.querySelector(".courses-div").innerHTML += `<div class = "course-div" course_id = ${course["course_id"]}>${(course_sections.map((s) => {return s["section_id"]}).filter((s) => {return previousEnrollments.includes(s)}).length > 0) ? `
-<div class="course-div-header"><div class="course-enrolled">Enrolled</div><div><img src="/static/images/delete.png" class="remove-course-button" onclick="removeCourse(this)"><img src="/static/images/plus.png" class="add-course-back-button" onclick="addCourseBack(this)"></div></div><h2>${course["subject"]} ${course["course_level"]}</h2>` : `<div class="course-div-header"><h2>${course["subject"]} ${course["course_level"]}</h2><div><img src="/static/images/delete.png" class="remove-course-button" onclick="removeCourse(this)"></div></div>`}<h3>${course["name"]}</h3><h4>Credits: ${course["credits"]}</h4><p>Description: ${course["description"]}</p>
+    document.querySelector(".courses-div").innerHTML += `<div class = "course-div" course_id = ${course["course_id"]}><div class="course-div-header"><div class="course-status">${(course_sections.map((s) => {return s["section_id"]}).filter((s) => {return previousEnrollments.includes(s)}).length > 0) ? "Enrolled" : "Added to Cart"}</div><div><img src="/static/images/delete.png" class="remove-course-button" onclick="removeCourse(this)"><img src="/static/images/plus.png" class="add-course-back-button" onclick="addCourseBack(this)"></div></div><h2>${course["subject"]} ${course["course_level"]}</h2><h3>${course["name"]}</h3><h4>Credits: ${course["credits"]}</h4><p>Description: ${course["description"]}</p>
                     Sections: ${(course_sections.length > 0) ? `<div class="sections-div">${course_sections.map((section) => {return `<div class = "course-section-div" section_id="${section["section_id"]}">${section["section_id"]}</div>`}).join("")}</div><div class="section-info-div hidden"></div><div><img src="static/images/dropdown.png" class="expand-course"></div>` : `<p class="no-sections">There are currently no sections offered for this course</p>`}`
 
     addSectionClicks()
