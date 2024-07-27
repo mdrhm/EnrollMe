@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, session, redirect
 import os
 import hashlib
 from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE
+from ai import generate_course
 application = Flask(__name__)
 application.config["SESSION_PERMANENT"] = False
 application.secret_key = os.urandom(24)
@@ -348,6 +349,15 @@ def logout():
     del session['id']
     del session['account_type']
     return {"message": "Logged out"}
+
+@application.route('/revenue')
+def revenue():
+    return render_template('report.html')
+
+@application.route('/ai', methods=['POST'])
+def ai():
+    body = request.json
+    return {"response": generate_course(body.get('query'), body.get('currently_taking'))}
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0', debug=True, port=8000)

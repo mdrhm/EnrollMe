@@ -4,6 +4,15 @@
         <h1>{{ page_title }}</h1>
     </div>
     <div>
+        {% if page_title == 'MyDashboard' %}
+        <img src="/static/ai.png" class="ai-logo">
+        <div class="hidden ai-container">
+            <div class="ai-div">
+                <h4>How may I assist you today?</h4><div class="ai-conversation"></div>
+                <form class="ai-input-div"><input type="text" class="ai-input">
+                    <button type="submit">Send</button></form></div>
+        </div>
+        {% endif %}
         <img src="/static/settings.png" class="settings-logo">
 
         <img src="/static/logout.png" class="logout-logo"></div>

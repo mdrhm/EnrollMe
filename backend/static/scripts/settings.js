@@ -125,3 +125,49 @@ document.querySelector(".logo").addEventListener("click", () => {
         window.location.href = "/enroll"
     }
 })
+
+document.querySelector(".ai-input-div").addEventListener('submit', function (e) {
+    e.preventDefault();
+    let query = document.querySelector(".ai-input").value
+    let currently_taking = Object.keys(enrollments)
+    document.querySelector(".ai-conversation").innerHTML = `<div><div class="loader"></div></div>`
+    document.querySelector(".ai-input").value = ""
+    if(query.replaceAll(" ", "") !== ""){
+        let data = {
+            query: query,
+            currently_taking: currently_taking
+        }
+        const ai = new XMLHttpRequest();
+        ai.withCredentials = true;
+        ai.addEventListener("readystatechange", function() {
+            if(this.readyState === 4) {
+                document.querySelector(".ai-conversation").innerHTML = JSON.parse(this.responseText)["response"]
+                console.log(JSON.parse(this.responseText))
+                addAICourseClicks()
+                document.querySelector(".ai-container").classList.remove("hidden")
+            }
+        });
+        ai.open("POST", "/ai");
+        ai.setRequestHeader("Content-Type", "application/json");
+        ai.send(JSON.stringify(data));
+    }
+
+})
+
+function addAICourseClicks() {
+    for (let course of document.querySelectorAll(".ai-conversation span")) {
+        course.addEventListener("click", () => {
+            if (!Object.keys(enrollments).includes(course.getAttribute("course_id"))) {
+                addCourse(parseInt(course.getAttribute("course_id")))
+            }
+
+        })
+    }
+}
+
+document.querySelector(".ai-logo").addEventListener("click", () => {
+    document.querySelector(".ai-container").classList.toggle("hidden")
+    document.querySelector(".ai-conversation").innerHTML = ""
+    document.querySelector(".ai-input").value = ""
+
+})
