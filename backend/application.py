@@ -5,7 +5,6 @@ from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SE
 application = Flask(__name__)
 application.config["SESSION_PERMANENT"] = False
 application.secret_key = os.urandom(24)
-session = {}
 
 @application.route('/courses', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def courses():
