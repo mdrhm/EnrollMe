@@ -70,7 +70,7 @@ function displayEnrollments(){
             let hours = (new Date(`July 1, 1999, ${meeting["end_time"]}`).getTime() - new Date(`July 1, 1999, ${meeting["start_time"]}`).getTime())/3600000
             let day = days.indexOf(meeting["day"])
             let start = (new Date(`July 1, 1999, ${meeting["start_time"]}`).getTime() - new Date(`July 1, 1999, 0:00:00`).getTime())/3600000
-            scheduleCourses.innerHTML += `<div class="schedule-course ${(section["enrolled"] === section["max_capacity"]) ? "full" : ""}" style="--hours: ${hours}; --day: ${day}; --start: ${start};"><p>${section["course_code"]}</p><p>${format_time(meeting["start_time"])} to ${format_time(meeting["end_time"])}</p></div>`
+            scheduleCourses.innerHTML += `<div class="schedule-course ${(section["enrolled"] === section["max_capacity"]) ? "full" : ""} ${(previousEnrollments.includes(section["section_id"]) ? "enrolled" : "")}" style="--hours: ${hours}; --day: ${day}; --start: ${start};"><p>${section["course_code"]}</p><p>${format_time(meeting["start_time"])} to ${format_time(meeting["end_time"])}</p></div>`
         }
     }
     disableButtonOnConflict()
@@ -89,17 +89,18 @@ function removeCourse(course){
 function submitEnrollment(){
     document.querySelector(".submit-enrollment").innerHTML = "Enrolling..."
     document.querySelector(".submit-enrollment").classList.add("disabled")
-    var data = JSON.stringify({
+    const data = {
         student_id: id,
         sections: Object.values(enrollments).map((section) => {return section["section_id"]}).filter((section_id) => {return section_id})
-    });
-
+    }
+    previousEnrollments = data["sections"]
     const enrollmentsSubmit = new XMLHttpRequest();
     enrollmentsSubmit.withCredentials = true;
     enrollmentsSubmit.addEventListener("readystatechange", function() {
         if(this.readyState === 4) {
             console.log(this.responseText);
             document.querySelector(".submit-enrollment").innerHTML = "Enrolled"
+            initializeEnrollments()
             setTimeout(() => {
                 document.querySelector(".submit-enrollment").innerHTML = "Enroll"
                 document.querySelector(".submit-enrollment").classList.remove("disabled")
@@ -108,11 +109,12 @@ function submitEnrollment(){
     });
     enrollmentsSubmit.open("PUT", "/enrollments");
     enrollmentsSubmit.setRequestHeader("Content-Type", "application/json");
-    enrollmentsSubmit.send(data);
+    enrollmentsSubmit.send(JSON.stringify(data));
 }
 
 function initializeEnrollments(){
     for(let enrollment of previousEnrollments){
+        document.querySelector(".courses-div").innerHTML = ''
         let section = sections.filter((section) => {return section["section_id"] === parseInt(enrollment)})[0]
         enrollments[section["course_id"]] = section
         displayEnrollments()
@@ -126,7 +128,8 @@ function addCourse(course_id){
     let course = courses.filter((currentCourse) => {return currentCourse["course_id"] === course_id})[0]
     console.log(course)
     let course_sections = sections.filter((section) => {return section["course_id"] === course_id})
-    document.querySelector(".courses-div").innerHTML += `<div class = "course-div" course_id = ${course["course_id"]}><div class="course-div-header"><h2>${course["subject"]} ${course["course_level"]}</h2><div><img src="/static/delete.png" class="remove-course-button" onclick="removeCourse(this)"></div></div><h3>${course["name"]}</h3><h4>Credits: ${course["credits"]}</h4><p>Description: ${course["description"]}</p>
+    document.querySelector(".courses-div").innerHTML += `<div class = "course-div" course_id = ${course["course_id"]}>${(course_sections.map((s) => {return s["section_id"]}).filter((s) => {return previousEnrollments.includes(s)}).length > 0) ? `
+<div class="course-div-header"><div class="course-enrolled">Enrolled</div><div><img src="/static/delete.png" class="remove-course-button" onclick="removeCourse(this)"></div></div><h2>${course["subject"]} ${course["course_level"]}</h2>` : `<div class="course-div-header"><h2>${course["subject"]} ${course["course_level"]}</h2><div><img src="/static/delete.png" class="remove-course-button" onclick="removeCourse(this)"></div></div>`}<h3>${course["name"]}</h3><h4>Credits: ${course["credits"]}</h4><p>Description: ${course["description"]}</p>
                     Sections: ${(course_sections.length > 0) ? `<div class="sections-div">${course_sections.map((section) => {return `<div class = "course-section-div" section_id="${section["section_id"]}">${section["section_id"]}</div>`}).join("")}</div><div class="section-info-div hidden"></div><div><img src="static/dropdown.png" class="expand-course"></div>` : `<p class="no-sections">There are currently no sections offered for this course</p>`}`
 
     addSectionClicks()

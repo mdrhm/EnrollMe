@@ -130,9 +130,9 @@ document.querySelector(".ai-input-div").addEventListener('submit', function (e) 
     e.preventDefault();
     let query = document.querySelector(".ai-input").value
     let currently_taking = Object.keys(enrollments)
-    document.querySelector(".ai-conversation").innerHTML = `<div><div class="loader"></div></div>`
     document.querySelector(".ai-input").value = ""
     if(query.replaceAll(" ", "") !== ""){
+        document.querySelector(".ai-conversation").innerHTML = `<div><div class="loader"></div></div>`
         let data = {
             query: query,
             currently_taking: currently_taking
