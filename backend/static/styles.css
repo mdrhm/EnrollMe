@@ -1250,3 +1250,7 @@ img.scroll-arrow {
         margin-bottom: 0px;
     }
 }
+
+canvas {
+    filter: invert(1);
+}

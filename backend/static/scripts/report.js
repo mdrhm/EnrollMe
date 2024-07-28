@@ -1,5 +1,5 @@
 let total_revenue, revenue_by_service, order_by_service, order_by_service_by_month
-const colors = ["#ff595e", "#ff924c", "#ffca3a", "#c5ca30", "#8ac926", "#52a675", "#1982c4", "#4267ac", "#6a4c93"]
+const colors = ["#00a6a1", "#006db3", "#0035c5", "#3a35cf", "#8ac926", "#7536d9", "#e67d3b", "#bd9853", "#95b36c"]
 
 const getReports = new XMLHttpRequest();
 getReports.withCredentials = true;
@@ -141,19 +141,13 @@ function loadOrderByServiceByMonth() {
     var options = {
         maintainAspectRatio: false,
         scales: {
-            yAxes:  [{
-                display: true,
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Y axis name',
-                    fontColor: 'white',
-                    fontSize: 10
+            xAxes: [{
+                type: "time",
+                gridLines : {
+                    display : false
                 },
-                ticks: {
-                    fontColor: "white",
-                    fontSize: 14
-                }
-            }]
+                scaleLabel : { fontColor: 'white', fontSize:16 }
+            }],
         },
         animation: {
             y: {
@@ -167,8 +161,12 @@ function loadOrderByServiceByMonth() {
             }
         },
         plugins: {
-            colors: {
-                forceOverride: true
+            legend: {
+                labels: {
+                    font: {
+                        color: 'white'
+                    }
+                }
             }
         }
     };
