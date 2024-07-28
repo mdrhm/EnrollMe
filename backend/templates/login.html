@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="static/styles.css">
     <title>Login - EnrollMe</title>
     <link rel="icon" href="/static/images/logo.svg" sizes="any" type="image/svg+xml">
+    <account>{{ account_type }}</account>
 </head>
 <div class="welcome-screen">
     <img src="/static/images/logo.svg" class="logo">
@@ -15,14 +16,6 @@
 <div class = "login-div">
 <h2>Login</h2>
 <form id="loginForm">
-    <div class = "hidden"><label for="account_type">I am a</label>
-        <div><input type="dropdown"  autocomplete="off" role="combobox" id="account_type" name="account_type" option_id="{{ account_type }}">
-        <datalist id="account_types" role="listbox">
-            <option value="student">Student</option>
-            <option value="professor">Professor</option>
-        </datalist>
-        </div>
-    </div>
     <div>
     <label for="username">Email or ID:</label>
     <input type="text" id="username" name="username">
