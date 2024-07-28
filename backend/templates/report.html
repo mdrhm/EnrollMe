@@ -1,41 +1,37 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <script type="text/javascript">
-        let chart = ""
-        window.onload = function () {
-            chart = new CanvasJS.Chart("chartContainer",
-                {
-                    title:{
-                        text: "Gaming Consoles Sold in 2012"
-                    },
-                    legend: {
-                        maxWidth: 350,
-                        itemWidth: 120
-                    },
-                    data: [
-                        {
-                            type: "pie",
-                            showInLegend: true,
-                            legendText: "{indexLabel}",
-                            dataPoints: [
-                                { y: 4181563, indexLabel: "PlayStation 3" },
-                                { y: 2175498, indexLabel: "Wii" },
-                                { y: 3125844, indexLabel: "Xbox 360" },
-                                { y: 1176121, indexLabel: "Nintendo DS"},
-                                { y: 1727161, indexLabel: "PSP" },
-                                { y: 4303364, indexLabel: "Nintendo 3DS"},
-                                { y: 1717786, indexLabel: "PS Vita"}
-                            ]
-                        }
-                    ]
-                });
-            chart.render();
-        }
-    </script>
-    <script type="text/javascript" src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/styles.css">
+    <title>Report - EnrollMe</title>
+    <link rel="icon" href="/static/images/logo.svg" sizes="any" type="image/svg+xml">
 </head>
-<body>
-<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<body class="report-body">
+<nav>
+    <div>
+        <img src="/static/images/logo.svg" class="logo">
+        <h1>MyReport</h1>
+    </div>
+    <a href="/revenue/download" class = "download-report"><img src="/static/images/download.png">Download Report</a>
+</nav>
+<div class="total-revenue-container">
+    <h1>Total Revenue: </h1>
+<div class ="total-revenue"></div>
+</div>
+<div class="canvas-container">
+    <h2>Revenue By Each Service</h2>
+    <canvas id="revenue-by-each-service"></canvas>
+</div>
+<div class="canvas-container">
+    <h2>Total Orders By Service</h2>
+    <canvas id="total-orders-by-service"></canvas>
+</div>
+<div class="canvas-container">
+    <h2>Orders by Service By Month</h2>
+    <canvas id="order-service-by-month"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0-beta/dist/chart.min.js"></script>
+<script src="/static/scripts/report.js"></script>
+<script src="/static/scripts/components.js"></script>
 </body>
 </html>

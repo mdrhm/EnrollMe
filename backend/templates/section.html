@@ -112,7 +112,7 @@
                         <option value="{{ professor.get('professor_id')}}">{{ professor.get('first_name') }} {{ professor.get('last_name') }}</option>
                         {% endfor %}
                     </datalist></td>
-                <td><div><img src = "/static/images/delete.png" class="remove-meeting-button" onclick="this.parentElement.parentElement.remove()"></div></td>
+                <td><div><img src = "/static/images/delete.png" class="remove-meeting-button" onclick="this.parentElement.parentElement.parentElement.remove()"></div></td>
             </tr>
             {% endfor %}
             {% endif %}

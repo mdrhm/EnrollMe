@@ -19,7 +19,7 @@ body{
     padding-top: 120px;
 }
 
-.login-body, .signup-body, .section-body, .settings-body, .dashboard-body{
+.login-body, .signup-body, .section-body, .settings-body, .dashboard-body, .report-body{
     background: var(--gradient-bg);
     display: flex;
     flex-direction: column;
@@ -789,10 +789,6 @@ button.submit-enrollment, .add-section {
     color: white !important;
 }
 
-button:hover, a:not(.section):hover {
-    scale: 0.99;
-}
-
 div:has(> .remove-meeting-button) {
     border-radius: 10px;
     height: 35px;
@@ -1124,4 +1120,101 @@ div:has(> .loader) {
 
 .course-div.dropped .add-course-back-button {
     display: block !important;
+}
+
+.canvas-container {
+    height: 550px;
+    width: 900px;
+    padding: 50px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    color: white;
+}
+
+.canvas-container:has(#revenue-by-each-service) {
+    width: 500px !important;
+    padding: 50px 250px;
+}
+
+body.report-body {
+    gap: 30px;
+}
+
+canvas#total-orders-by-service {
+    padding-bottom: 20px;
+}
+
+.total-revenue {
+    color: white;
+    height: 100px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    border-radius: 20px;
+    box-sizing: border-box;
+    min-width: 520px;
+}
+
+.number {
+    position: relative;
+    animation: numbers-animate 2s linear forwards;
+}
+
+.number h1 {
+    font-size: 80px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes numbers-animate{
+    0%{
+        bottom: 0%;
+    }
+    100%{
+        bottom: calc(var(--number)*140px);
+    }
+}
+
+.number:nth-child(4n+3) {
+    width: 25px;
+}
+
+.number:last-child {
+    width: initial;
+}
+
+.total-revenue-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    color: white;
+    text-transform: uppercase;
+    font-size: 20px;
+}
+
+div:has(> .remove-meeting-button):hover {
+    background: rgba(256,256,256,0.1);
+}
+
+.download-report img {
+    height: 30px;
+    filter: invert(1);
+}
+
+.download-report {
+    display: flex !important;
+    flex-direction: row;
+    gap: 20px;
 }

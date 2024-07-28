@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template, session, redirect, Response
 import os
 import hashlib
+from datetime import date
 from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, enroll_student, generate_csv, retrieve_roster
 from ai import generate_course
+
 
 application = Flask(__name__)
 application.config["SESSION_PERMANENT"] = False
@@ -305,7 +307,7 @@ def download_roster():
         return {"status": 400, "error": "Invalid Section ID"}, 400
     if not professor_id == str(session.get('id')):
         return {"status": 400, "error": "Professor ID not authenticated"}, 400
-    data = retrieve_roster(professor_id, section_id)
+    data = [['Student ID', 'First Name', 'Last Name', 'Email', 'Major']] + retrieve_roster(professor_id, section_id)
     course_code = SELECT_FROM_WHERE("CONCAT(subject, '_', course_level) as course_code", "course INNER JOIN section ON section.course_id=course.course_id", "section.section_id=" + section_id)[0]["course_code"]
     csv_data = generate_csv(data)
     return Response(
@@ -373,7 +375,55 @@ def logout():
 
 @application.route('/revenue')
 def revenue():
-    return render_template('report.html')
+    return render_template('report.html', services=SELECT_FROM_WHERE("*", "service"))
+
+@application.route("/revenue/download", methods=["GET", "POST"])
+def revenue_download():
+    total_revenue = SELECT_FROM_WHERE("*", "orders")
+    total_revenue += [{"total_revenue":'${:,.2f}'.format(float(SELECT_FROM_WHERE("SUM(total) AS total_revenue", "orders")[0]["total_revenue"]))}]
+    revenue_by_service = SELECT_FROM_WHERE("SUM(total) AS total, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY service_id ORDER BY service_id")
+    order_by_service = SELECT_FROM_WHERE("COUNT(*) AS count, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY service_id ORDER BY service_id")
+    order_by_service_by_month = SELECT_FROM_WHERE("*", "service")
+    for order in order_by_service_by_month:
+        order["orders_by_month"] = SELECT_FROM_WHERE("COUNT(*) as count, LEFT(date, 7) as month", "orders", "service_id=" + str(order["service_id"]) + " GROUP BY month")
+    reports = {
+        "total_revenue": total_revenue,
+        "revenue_by_service": revenue_by_service,
+        "order_by_service": order_by_service,
+        "order_by_service_by_month": order_by_service_by_month
+    }
+    csv_data = generate_csv([["Total Revenue", SELECT_FROM_WHERE("CONCAT(SUM(total), '') AS total_revenue", "orders")[0]["total_revenue"]]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([["Revenue By Each Service"]])
+    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Revenue"]])
+    for order in revenue_by_service:
+        csv_data += generate_csv([[order["service_id"], order["type"], order["name"], order["total"] if order["total"] else 0]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([["Orders By Each Service"]])
+    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Orders"]])
+    for order in order_by_service:
+        csv_data += generate_csv([[order["service_id"], order["type"], order["name"], order["count"]]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([["Orders by each service by month"]])
+    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Sep", "Oct", "Nov", "Dec"]])
+    values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    for service in order_by_service_by_month:
+        values_to_filter = list(map(lambda order: order["count"],service["orders_by_month"]))
+        monthsToFilter = list(map(lambda order: int(order["month"].split("-")[1]),service["orders_by_month"]))
+        for i in range(len(values_to_filter)):
+            values[monthsToFilter[i] - 1] = values_to_filter[i]
+        csv_data += generate_csv([[service["service_id"], service["type"], service["name"]] + values])
+    match request.method:
+        case 'GET':
+            return Response(
+                csv_data,
+                mimetype='text/csv',
+                headers={"Content-Disposition": "attachment;filename=EnrollMe_Report_As_Of_" + str(date.today()) + ".csv"}
+            )
+        case 'POST':
+            return reports
+
 
 @application.route('/ai', methods=['POST'])
 def ai():
