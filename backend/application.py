@@ -318,11 +318,11 @@ def download_roster():
 
 @application.route('/')
 def index():
-    return render_template('login.html')
+    return render_template('login.html', account_type=account_type)
 
 @application.route('/register')
 def signup():
-    return render_template('signup.html')
+    return render_template('signup.html', account_type=account_type)
 
 @application.route('/dashboard')
 def professor_dashboard():
@@ -431,4 +431,5 @@ def ai():
     return {"response": generate_course(body.get('query'), body.get('currently_taking'))}
 
 if __name__ == "__main__":
+    account_type = os.getenv("ACCOUNT_TYPE")
     application.run(host='0.0.0.0', debug=True, port=8000)

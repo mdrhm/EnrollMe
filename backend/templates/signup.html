@@ -14,16 +14,8 @@
     <p>Effortlessly Plan Your Perfect Semester</p></div>
 <div class="signup-div">
 <h2>Sign Up</h2>
-<div style="width: 66%"><label for="account_type">I am a </label>
-    <div><input type="dropdown"  autocomplete="off" role="combobox" id="account_type" name="account_type" option_id="student">
-        <datalist id="account_types" role="listbox">
-            <option value="student">Student</option>
-            <option value="professor">Professor</option>
-        </datalist>
-    </div>
-</div>
-
-<form id="professor-form" class = "hidden">
+{% if account_type == 'professor' %}
+<form id="professor-form">
     <div>
     <label for="professor_first_name">First Name:</label>
     <input type="text" id="professor_first_name" name="professor_first_name">
@@ -110,7 +102,7 @@
     <p class="form-error-message hidden professor_phone_number">That's not a valid phone number</p>
     <button type="submit">Sign Up</button>
 </form>
-
+{% else %}
 <form id="student-form">
     <div>
     <label for="student_first_name">First Name:</label>
@@ -212,6 +204,7 @@
     <p class="form-error-message hidden student_sex">This field is required</p>
     <button type="submit">Sign Up</button>
 </form>
+    {% endif %}
     <div class="redirect-div">Already have an account? <a href="/">Log in Here</a></div>
 </div>
 <script src="/static/scripts/components.js"></script>

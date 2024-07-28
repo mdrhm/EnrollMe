@@ -15,8 +15,8 @@
 <div class = "login-div">
 <h2>Login</h2>
 <form id="loginForm">
-    <div><label for="account_type">I am a</label>
-        <div><input type="dropdown"  autocomplete="off" role="combobox" id="account_type" name="account_type" option_id="student">
+    <div class = "hidden"><label for="account_type">I am a</label>
+        <div><input type="dropdown"  autocomplete="off" role="combobox" id="account_type" name="account_type" option_id="{{ account_type }}">
         <datalist id="account_types" role="listbox">
             <option value="student">Student</option>
             <option value="professor">Professor</option>
