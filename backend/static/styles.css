@@ -472,7 +472,7 @@ datalist {
     overflow-x: hidden;
 }
 
-datalist::-webkit-scrollbar-thumb, datalist::-webkit-scrollbar, .ai-conversation::-webkit-scrollbar-thumb, .ai-conversation::-webkit-scrollbar {
+datalist::-webkit-scrollbar-thumb, datalist::-webkit-scrollbar, .ai-conversation::-webkit-scrollbar-thumb, .ai-conversation::-webkit-scrollbar, .report-body::-webkit-scrollbar-thumb, .report-body::-webkit-scrollbar {
     display: none;
     width: 0px;
 }
@@ -1143,6 +1143,7 @@ div:has(> .loader) {
 
 body.report-body {
     gap: 30px;
+    padding-top: 99px;
 }
 
 canvas#total-orders-by-service {
@@ -1195,6 +1196,7 @@ canvas#total-orders-by-service {
     color: white;
     text-transform: uppercase;
     font-size: 20px;
+    height: 650px;
 }
 
 div:has(> .remove-meeting-button):hover {
@@ -1210,4 +1212,41 @@ div:has(> .remove-meeting-button):hover {
     display: flex !important;
     flex-direction: row;
     gap: 20px;
+}
+
+.revenue-container {
+    height: 650px;
+    overflow: hidden;
+    width: 1000px;
+}
+
+.revenue-container-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 100px;
+    justify-content: start;
+    transform: translateY(calc(var(--option)* -750px));
+    transition: all 2s ease-in-out;
+}
+
+img.scroll-arrow {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    height: 90px;
+    animation: 1.5s scroll-down ease-in-out infinite;
+    filter: invert(1);
+    cursor: pointer;
+}
+
+@keyframes scroll-down{
+    0%{
+        margin-bottom: 0px
+    }
+    50%{
+        margin-bottom: 20px;
+    }
+    100%{
+        margin-bottom: 0px;
+    }
 }

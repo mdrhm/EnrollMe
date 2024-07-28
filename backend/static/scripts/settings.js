@@ -147,7 +147,7 @@ document.querySelector(".ai-input-div").addEventListener('submit', function (e) 
                 document.querySelector(".ai-container").classList.remove("hidden")
             }
         });
-        ai.open("POST", "http://localhost:8000/ai");
+        ai.open("POST", "/ai");
         ai.setRequestHeader("Content-Type", "application/json");
         ai.send(JSON.stringify(data));
     }

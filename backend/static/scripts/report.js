@@ -38,9 +38,15 @@ function loadRevenueByService() {
             borderColor: colors,
         }]
     }
+    var options = {
+        animation: {
+            duration: 3000,
+        }
+    }
     new Chart('revenue-by-each-service', {
         type: 'doughnut',
-        data: data
+        data: data,
+        options: options
     });
 }
 
@@ -182,3 +188,36 @@ function showRevenue(revenue){
         document.querySelector(".total-revenue").innerHTML += `<div class="number" style="--number: ${(specialChars.includes(c)) ? specialChars.indexOf(c) + 4 : parseInt(c) - 6}; width: ${widths[c]}px"> <h1>0</h1> <h1>1</h1> <h1>2</h1> <h1>3</h1> <h1>4</h1> <h1>5</h1> <h1>6</h1> <h1>7</h1> <h1>8</h1> <h1>9</h1> <h1>.</h1><h1>,</h1><h1>$</h1></div>`
     }
 }
+
+
+let scrollTimeout;
+
+function scrollDown(){
+    if (scrollTimeout) {
+        return
+    }
+    lastKnownScrollPosition = window.scrollY;
+    let option = (parseInt(getComputedStyle(document.querySelector(".revenue-container-inner")).getPropertyValue('--option')) + 1) % 4
+    document.querySelector(".revenue-container-inner").style = "--option: " + option
+    switch (option) {
+        case 0:
+            showRevenue(total_revenue.at(-1)["total_revenue"])
+            break
+        case 1:
+            loadRevenueByService()
+            break
+        case 2:
+            loadTotalOrdersByService()
+            break
+        case 3:
+            loadOrderByServiceByMonth()
+            break
+    }
+    console.log(lastKnownScrollPosition)
+    scrollTimeout = setTimeout(() => {
+        scrollTimeout = null
+    }, 2000)
+}
+
+document.addEventListener("wheel", scrollDown)
+document.querySelector(".scroll-arrow").addEventListener("click", scrollDown)
