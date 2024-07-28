@@ -176,8 +176,9 @@ function loadOrderByServiceByMonth() {
 
 function showRevenue(revenue){
     const specialChars = [".", ",", "$"]
+    const widths = {"0":55,"1":39,"2":50,"3":53,"4":54,"5":52,"6":53,"7":48,"8":53,"9":53,".":24,",":24,"$":52}
     document.querySelector(".total-revenue").innerHTML = ''
     for(let c of revenue){
-        document.querySelector(".total-revenue").innerHTML = `<div class="number" style="--number: ${(specialChars.includes(c)) ? specialChars.indexOf(c) + 4 : parseInt(c) - 6}"> <h1>0</h1> <h1>1</h1> <h1>2</h1> <h1>3</h1> <h1>4</h1> <h1>5</h1> <h1>6</h1> <h1>7</h1> <h1>8</h1> <h1>9</h1> <h1>.</h1><h1>,</h1><h1>$</h1></div>` + document.querySelector(".total-revenue").innerHTML
+        document.querySelector(".total-revenue").innerHTML += `<div class="number" style="--number: ${(specialChars.includes(c)) ? specialChars.indexOf(c) + 4 : parseInt(c) - 6}; width: ${widths[c]}px"> <h1>0</h1> <h1>1</h1> <h1>2</h1> <h1>3</h1> <h1>4</h1> <h1>5</h1> <h1>6</h1> <h1>7</h1> <h1>8</h1> <h1>9</h1> <h1>.</h1><h1>,</h1><h1>$</h1></div>`
     }
 }

@@ -1154,13 +1154,14 @@ canvas#total-orders-by-service {
     height: 100px;
     overflow: hidden;
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row;
     align-items: center;
     background: rgba(0, 0, 0, 0.4);
     padding: 15px;
     border-radius: 20px;
     box-sizing: border-box;
     min-width: 520px;
+    justify-content: center;
 }
 
 .number {
@@ -1185,14 +1186,6 @@ canvas#total-orders-by-service {
     }
 }
 
-.number:nth-child(4n+3) {
-    width: 25px;
-}
-
-.number:last-child {
-    width: initial;
-}
-
 .total-revenue-container {
     display: flex;
     flex-direction: row;
@@ -1209,7 +1202,7 @@ div:has(> .remove-meeting-button):hover {
 }
 
 .download-report img {
-    height: 30px;
+    height: 25px;
     filter: invert(1);
 }
 
