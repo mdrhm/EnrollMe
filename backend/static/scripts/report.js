@@ -29,7 +29,7 @@ function loadRevenueByService() {
         maintainAspectRatio: false,
         width: 550,
         height: 550,
-        labels: revenue_by_service.map((service) => {return service["name"]}),
+        labels: revenue_by_service.map((service) => {return service["name"] + " - " + service["type"]}),
         datasets: [{
             data: revenue_by_service.map((service) => {return (service["total"]) ? parseFloat(service["total"]) : 0}),
             backgroundColor: colors.map((color) => {return color + "77"}),
@@ -52,7 +52,7 @@ function loadRevenueByService() {
 
 function loadTotalOrdersByService() {
     var data = {
-        labels: order_by_service.map((service) => {return service["name"]}),
+        labels: order_by_service.map((service) => {return service["name"] + " - " + service["type"]}),
         datasets: [{
             data: order_by_service.map((service) => {return service["count"]
             }),
@@ -124,7 +124,7 @@ function loadOrderByServiceByMonth() {
         let color = colors[i]
         console.log(color)
         datasets.push({
-            label: service["name"],
+            label: service["name"] + " - " + service["type"],
             backgroundColor: color + "33",
             borderColor: color,
             borderWidth: 2,
