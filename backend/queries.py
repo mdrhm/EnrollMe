@@ -76,3 +76,13 @@ def enroll_student(student_id, section_id, status):
         return {"message": result_args['@_EnrollStudent_arg3']}
     except Exception as error:
         return {"error": str(error)}
+
+def get_enrollment(id):
+    try:
+        cursor.callproc('GetEnrollments', [id])
+        sections = []
+        for result in cursor.stored_results():
+            sections = result.fetchall()
+            return sections
+    except Exception as error:
+        return {"error": str(error)}

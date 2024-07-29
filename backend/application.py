@@ -1,6 +1,6 @@
 from flask import Flask, Response, request
 import hashlib
-from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, enroll_student, generate_csv, retrieve_roster
+from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, generate_csv, get_enrollment, retrieve_roster
 application = Flask(__name__)
 
 @application.route('/courses', methods=['GET', 'POST', 'DELETE', 'PUT'])
@@ -247,7 +247,7 @@ def enrollments():
             id = request.args.get('id')
             if not id:
                 return {"status": 401, "error": "Invalid Student ID"}, 401
-            schedule =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN enrollment ON enrollment.section_id=section.section_id INNER JOIN semester ON section.semester_id=semester.semester_id", "enrollment.student_id=" + id)
+            schedule =  get_enrollment(id)
             for i in range(len(schedule)):
                 schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, CONCAT(professor.first_name, ' ', professor.last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(schedule[i]["section_id"]))))
@@ -258,12 +258,11 @@ def enrollments():
             body = request.json
             enrollment = {
                 "student_id": str(body.get("student_id")),
-                "section_id": str(body.get("section_id")),
-                "status": ''
+                "section_id": str(body.get("section_id"))
             }
             if str(None) in enrollment.values():
                 return {"status": 400, "error": "Invalid body"}, 400
-            return enroll_student(enrollment["student_id"], enrollment["section_id"], enrollment["status"])
+            return INSERT_INTO(enrollment["student_id"], enrollment["section_id"])
         case 'DELETE':
             body = request.json
             student_id = str(body.get("student_id"))
@@ -278,7 +277,7 @@ def enrollments():
             already_enrolled = list(map(lambda x: str(x["section_id"]), SELECT_FROM_WHERE("section_id","enrollment", "student_id = " + student_id + " AND section_id in " + sections_str)))
             sections_to_add = filter(lambda x: x not in already_enrolled, sections)
             for section in sections_to_add:
-                enroll_student(student_id, section, '')
+                INSERT_INTO(student_id, section)
             return {"message": "Schedule Updated Successful", "updated": body}
 
 
