@@ -69,14 +69,6 @@ def generate_csv(data):
     string_buffer.seek(0)
     return string_buffer.getvalue()
     
-def enroll_student(student_id, section_id, status):
-    try:
-        args = [student_id, section_id, status]
-        result_args = cursor.callproc('EnrollStudent', args)
-        return {"message": result_args['@_EnrollStudent_arg3']}
-    except Exception as error:
-        return {"error": str(error)}
-
 def get_enrollment(id):
     try:
         cursor.callproc('GetEnrollments', [id])
