@@ -343,7 +343,7 @@ def student_enroll():
         sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["roster"] = SELECT_FROM_WHERE("DISTINCT(student.student_id), first_name, last_name, email, major", "student INNER JOIN enrollment on student.student_id=enrollment.student_id INNER JOIN section ON enrollment.section_id=section.section_id", "section.section_id=" + str(sections[i]["section_id"]))
         sections[i]["enrolled"] = len(sections[i]["roster"])
-    return render_template('enrollment.html', page_title = "MyDashboard", courses=SELECT_FROM_WHERE("*", "course"), sections = sections, enrollments=list(map(lambda x: x["section_id"], SELECT_FROM_WHERE("*", "enrollment", "student_id=" + str(session['id'])))), id = session['id'], account_type = session.get('account_type'), user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+    return render_template('enrollment.html', page_title = "MyDashboard", courses=SELECT_FROM_WHERE("*", "course", "1=1 ORDER BY subject, course_level"), sections = sections, enrollments=list(map(lambda x: x["section_id"], SELECT_FROM_WHERE("*", "enrollment", "student_id=" + str(session['id'])))), id = session['id'], account_type = session.get('account_type'), user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
 
 @application.route('/section/new')
 def section_new():
