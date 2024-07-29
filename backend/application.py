@@ -262,7 +262,7 @@ def enrollments():
             }
             if str(None) in enrollment.values():
                 return {"status": 400, "error": "Invalid body"}, 400
-            return INSERT_INTO(enrollment["student_id"], enrollment["section_id"])
+            return INSERT_INTO("enrollment", enrollment)
         case 'DELETE':
             body = request.json
             student_id = str(body.get("student_id"))
@@ -277,7 +277,7 @@ def enrollments():
             already_enrolled = list(map(lambda x: str(x["section_id"]), SELECT_FROM_WHERE("section_id","enrollment", "student_id = " + student_id + " AND section_id in " + sections_str)))
             sections_to_add = filter(lambda x: x not in already_enrolled, sections)
             for section in sections_to_add:
-                INSERT_INTO(student_id, section)
+                INSERT_INTO("enrollment", {"student_id": str(body.get("student_id")), "section_id": section})
             return {"message": "Schedule Updated Successful", "updated": body}
 
 

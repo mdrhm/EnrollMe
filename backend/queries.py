@@ -74,7 +74,18 @@ def get_enrollment(id):
         cursor.callproc('GetEnrollments', [id])
         sections = []
         for result in cursor.stored_results():
-            sections = result.fetchall()
-            return sections
+            sections += result.fetchall()
+        return list(map(lambda x: {"section_id": x[0],
+                                "course_name": x[1],
+                                "course_id": x[2],
+                                "credits": x[3],
+                                "description": x[4],
+                                "course_code": x[5],
+                                "end_date": x[6],
+                                "instruction_mode": x[7],
+                                "start_date": x[8],
+                                "max_capacity": x[9],
+                                "semester": x[10]
+                                }, sections))
     except Exception as error:
         return {"error": str(error)}
