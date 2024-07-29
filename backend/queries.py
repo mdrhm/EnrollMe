@@ -48,7 +48,6 @@ def UPDATE_SET_WHERE(t, s, w):
     except Exception as error:
         return {"error": str(error)}
 
-
 def retrieve_roster(professor_id, section_id):
     try:
         cursor.callproc('RetrieveRoster', [professor_id, section_id])
@@ -64,7 +63,6 @@ def retrieve_roster(professor_id, section_id):
 def generate_csv(data):
     string_buffer = StringIO()
     csv_writer = csv.writer(string_buffer)
-    csv_writer.writerow(['Student ID', 'First Name', 'Last Name', 'Email', 'Major'])
     csv_writer.writerows(data)
     string_buffer.seek(0)
     return string_buffer.getvalue()

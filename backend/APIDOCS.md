@@ -380,6 +380,7 @@ Update a student.
 PUT /students
 Body: {
     "student_id": 10000001,
+>>>>>>> main
     "first_name":"Maria",
     "last_name":"Johnson",
     "email":"mariajohnson@ccny.cuny.edu",

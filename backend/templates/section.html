@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="/static/images/logo.svg" sizes="any" type="image/svg+xml">
+    <title>{{ title }} - EnrollMe</title>
+    <id>{{ id }}</id>
+    <account>professor</account>
+</head>
+<body class = "section-body">
+{% include 'settings.html' %}
+<div class = "section-div">
+<h2>{{ title }}</h2>
+<form id="section-form">
+    <div>
+        <label>Course: </label>
+        <div>
+        <input {{'type=dropdown' if not section }} autocomplete="off" role="combobox" id="course_id" name="courses"  option_id="{{'' if not section else section['course_id'] }}" {{ "disabled" if section else ""}}>
+        <datalist id="courses" role="listbox">
+            {% for course in courses %}
+                <option value="{{ course.get('course_id')}}">{{ course.get('subject') }} {{ course.get('course_level') }}</option>
+            {% endfor %}
+        </datalist>
+        </div>
+    </div>
+
+    <div>
+        <label>Semester: </label>
+        <div>
+        <input type="dropdown" autocomplete="off" role="combobox" id="semester_id" name="semester_id"  option_id="{{'' if not section else section['semester_id'] }}">
+        <datalist id="semesters" role="listbox">
+            {% for semester in semesters %}
+            <option value="{{ semester.get('semester_id')}}">{{ semester.get('name') }}</option>
+            {% endfor %}
+        </datalist>
+        </div>
+    </div>
+
+    <div>
+        <label>Instruction Mode: </label>
+        <div>
+        <input type="dropdown" autocomplete="off" role="combobox" id="instruction_mode" name="instruction_mode" option_id="{{'' if not section else section['instruction_mode'] }}">
+        <datalist id="instruction_modes" role="listbox">
+            <option value="In Person">In Person</option>
+            <option value="Hybrid Synchronous">Hybrid Synchronous</option>
+            <option value="Online">Online</option>
+        </datalist>
+        </div>
+    </div>
+    <div>
+        <label for="max_capacity">Capacity:</label>
+        <div class="number-input">
+            <a onclick="this.parentNode.querySelector('input[type=number]').stepDown()" class="minus">-</a>
+            <input type="number" min = "1" id="max_capacity" name="max_capacity" value="{{ 1 if not section else section['max_capacity'] }}">
+            <a onclick="this.parentNode.querySelector('input[type=number]').stepUp()" class="plus">+</a>
+        </div>
+    </div>
+    <div class="meeting-times">
+        <label>Meeting Times:</label>
+        <table class = "meeting-time">
+            <tr>
+                <td>Day</td>
+                <td>Room</td>
+                <td>Start Time</td>
+                <td>End Time</td>
+                <td>Professor</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="dropdown" autocomplete="off" role="combobox" id="day" name="day" option_id="{{'' if not section['meeting_times'] else section['meeting_times'][0]['day'] }}">
+                    <datalist id="days" role="listbox">
+                        <option value="Sun">Sunday</option>
+                        <option value="Mon">Monday</option>
+                        <option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thu">Thursday</option>
+                        <option value="Fri">Friday</option>
+                        <option value="Sat">Saturday</option>
+                    </datalist></td>
+                <td><input type="text" id="room" value="{{'' if not section else section['meeting_times'][0]['room'] }}"></td>
+                <td><input type="time" id="start_time" value="{{'' if not section else section['meeting_times'][0]['start_time'] }}"></td>
+                <td><input type="time" id="end_time" value="{{'' if not section else section['meeting_times'][0]['end_time'] }}"></td>
+                <td><input type="dropdown" autocomplete="off" role="combobox" id="professor_id" name="professor_id" option_id="{{user_id if not section else section['meeting_times'][0]['professor_id'] }}">
+                    <datalist id="professors" role="listbox">
+                        {% for professor in professors %}
+                        <option value="{{ professor.get('professor_id')}}">{{ professor.get('first_name') }} {{ professor.get('last_name') }}</option>
+                        {% endfor %}
+                    </datalist></td>
+                <td><div class="remove-meeting-button" style="cursor: initial;"></div>
+                </td>
+            </tr>
+            {% if section %}
+            {% for meeting in section.get("meeting_times")[1:] %}
+            <tr>
+                <td><input type="dropdown"  autocomplete="off" role="combobox" id="day" name="day" option_id="{{meeting['day'] }}">
+                    <datalist id="days" role="listbox">
+                        <option value="Sun">Sunday</option>
+                        <option value="Mon">Monday</option>
+                        <option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thu">Thursday</option>
+                        <option value="Fri">Friday</option>
+                        <option value="Sat">Saturday</option>
+                    </datalist></td>
+                <td><input type="text" id="room" value="{{ meeting['room'] }}"></td>
+                <td><input type="time" id="start_time" value="{{ meeting['start_time'] }}"></td>
+                <td><input type="time" id="end_time" value="{{ meeting['end_time'] }}"></td>
+                <td><input type="dropdown"  autocomplete="off" role="combobox" id="professor_id" name="professor_id" option_id="{{ meeting['professor_id'] }}">
+                    <datalist id="professors" role="listbox">
+                        {% for professor in professors %}
+                        <option value="{{ professor.get('professor_id')}}">{{ professor.get('first_name') }} {{ professor.get('last_name') }}</option>
+                        {% endfor %}
+                    </datalist></td>
+                <td><div><img src = "/static/images/delete.png" class="remove-meeting-button" onclick="this.parentElement.parentElement.parentElement.remove()"></div></td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </table>
+        <div class="add-meeting-button">+</div>
+    </div>
+    <button type="submit">{{ "Add Section" if id == "null" else "Save"}}</button>
+</form>
+</div>
+<script src="/static/scripts/components.js"></script>
+<script src="/static/scripts/section.js"></script>
+<script src="/static/scripts/settings.js"></script>
+<script src="/static/scripts/functions.js"></script>
+<script src="/static/scripts/enrollment.js"></script>
+</script>
+</body>
+</html>

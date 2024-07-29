@@ -1,0 +1,238 @@
+<nav>
+    <div>
+        <img src="/static/images/logo.svg" class="logo">
+        <h1>{{ page_title }}</h1>
+    </div>
+    <div>
+        {% if page_title == 'MyDashboard' and account_type == 'student' %}
+        <img src="/static/images/ai.png" class="ai-logo">
+        <div class="hidden ai-container">
+            <div class="ai-div">
+                <h4>How may I assist you today?</h4><div class="ai-conversation"></div>
+                <form class="ai-input-div"><input type="text" class="ai-input">
+                    <button type="submit">Send</button></form></div>
+        </div>
+        {% endif %}
+        <img src="/static/images/settings.png" class="settings-logo">
+
+        <img src="/static/images/logout.png" class="logout-logo"></div>
+</nav>
+<div class = "settings-div-outer hidden">
+<div class = "settings-div">
+    <div><img src="/static/images/close.png" class="close-setting"></div>
+<h2>Settings</h2>
+    <form id="settings-form">
+        {% if account_type == 'professor' %}
+
+        <div>
+            <label for="professor_id">Your ID:</label>
+            <input type="text" id="professor_id" name="professor_id" value="{{ id }}" disabled>
+        </div>
+        <div>
+            <label for="professor_first_name">First Name:</label>
+            <input type="text" id="professor_first_name" name="professor_first_name" value="{{ user['first_name'] }}">
+        </div>
+
+        <div><label for="professor_last_name">Last Name:</label>
+            <input type="text" id="professor_last_name" name="professor_last_name" value="{{ user['last_name'] }}">
+        </div>
+
+        <div>
+            <label for="professor_email">Email:</label>
+            <input type="email" id="professor_email" name="professor_email" value="{{ user['email'] }}">
+        </div>
+        <div>
+            <label for="professor_password">Password:</label>
+            <button type="password" id="professor_password" name="professor_password" class="change-password">Change Password</button>
+            <div class = "change-password-div hidden">
+                <div>
+                    <label for="old_password">Old Password:</label>
+                    <div class="password"><input type="password" id="old_password" name="old_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
+                    </div>
+                </div>
+                <div>
+                    <label for="new_password">New Password:</label>
+                    <div class="password"><input type="password" id="new_password" name="new_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
+                    </div>
+                </div>
+                <p class ="form-error-message new-password-error hidden">New Password has to have at least 8 characters, 1 letter, 1 number, and 1 special character</p>
+                <p class ="form-error-message change-password-error hidden">Your password is incorrect</p>
+                <div class ="change-password-buttons">
+                    <button class="cancel-change-password">Cancel</button>
+                    <button class="submit-change-password">Submit</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label for="professor_department">Department:</label>
+            <div>
+            <input type="dropdown"  autocomplete="off" role="combobox" id="professor_department" name="professor_department" option_id="{{ user['department'] }}">
+            <datalist id="professor_departments" role="listbox">
+                <option value="ACCT">Accounting</option>
+                <option value="ANTH">Anthropology</option>
+                <option value="ARCH">Architecture</option>
+                <option value="ART">Art</option>
+                <option value="BIOC">Biochemistry</option>
+                <option value="BIOL">Biology</option>
+                <option value="BUS">Business Administration</option>
+                <option value="CHEM">Chemistry</option>
+                <option value="COMM">Communications</option>
+                <option value="CSC">Computer Science</option>
+                <option value="CJ">Criminal Justice</option>
+                <option value="ECON">Economics</option>
+                <option value="EDU">Education</option>
+                <option value="EE">Electrical Engineering</option>
+                <option value="ENG">English</option>
+                <option value="ENVS">Environmental Science</option>
+                <option value="FIN">Finance</option>
+                <option value="GEOG">Geography</option>
+                <option value="GEOL">Geology</option>
+                <option value="GD">Graphic Design</option>
+                <option value="HIST">History</option>
+                <option value="HM">Hospitality Management</option>
+                <option value="HR">Human Resources</option>
+                <option value="IT">Information Technology</option>
+                <option value="IR">International Relations</option>
+                <option value="JOUR">Journalism</option>
+                <option value="LAW">Law</option>
+                <option value="MKT">Marketing</option>
+                <option value="MATH">Mathematics</option>
+                <option value="ME">Mechanical Engineering</option>
+                <option value="MUS">Music</option>
+                <option value="NURS">Nursing</option>
+                <option value="PHIL">Philosophy</option>
+                <option value="PHYS">Physics</option>
+                <option value="PS">Political Science</option>
+                <option value="PSY">Psychology</option>
+                <option value="PA">Public Administration</option>
+                <option value="PH">Public Health</option>
+                <option value="SW">Social Work</option>
+                <option value="SOC">Sociology</option>
+                <option value="SE">Software Engineering</option>
+                <option value="SPAN">Spanish</option>
+                <option value="STAT">Statistics</option>
+                <option value="THEA">Theatre</option>
+                <option value="UND">Undeclared</option>
+            </datalist>
+            </div>
+        </div>
+        <div>
+            <label for="professor_phone_number">Phone Number:</label>
+            <input type="tel" id="professor_phone_number" name="professor_phone_number" value="{{ user['phone_number'] }}">
+        </div>
+        <button type="submit">Save Changes</button>
+    {% else %}
+        <div>
+            <label for="student_id">Your ID:</label>
+            <input type="text" id="student_id" name="student_id" value="{{ id }}" disabled>
+        </div>
+        <div>
+            <label for="student_first_name">First Name:</label>
+            <input type="text" id="student_first_name" name="student_first_name" value="{{ user['first_name'] }}">
+        </div>
+        <div>
+            <label for="student_last_name">Last Name:</label>
+            <input type="text" id="student_last_name" name="student_last_name" value="{{ user['last_name'] }}">
+        </div>
+        <div>
+            <label for="student_email">Email:</label>
+            <input type="email" id="student_email" name="student_email" value="{{ user['email'] }}">
+        </div>
+        <div>
+            <label for="student_password">Password:</label>
+            <button type="password" id="student_password" name="student_password" class="change-password">Change Password</button>
+            <div class = "change-password-div hidden">
+                <div>
+                <label for="old_password">Old Password:</label>
+                    <div class="password"><input type="password" id="old_password" name="old_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
+                    </div>
+                </div>
+                <div>
+                    <label for="new_password">New Password:</label>
+                    <div class="password"><input type="password" id="new_password" name="old_password"><img src="/static/images/hide.png" class="hide-password hidden"><img src="/static/images/visible.png" class="show-password">
+                    </div>
+                </div>
+                <p class ="form-error-message new-password-error hidden">New Password has to have at least 8 characters, 1 letter, 1 number, and 1 special character</p>
+                <p class ="form-error-message change-password-error hidden">Your password is incorrect</p>
+                <div class ="change-password-buttons">
+                <button class="cancel-change-password">Cancel</button>
+                <button class="submit-change-password">Submit</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label for="student_major">Major:</label>
+            <div>
+            <input type="dropdown"  autocomplete="off" role="combobox" id="student_major" name="student_major" option_id="{{ user['major'] }}">
+            <datalist id="student_majors" role="listbox">
+                <option value="ACCT">Accounting</option>
+                <option value="ANTH">Anthropology</option>
+                <option value="ARCH">Architecture</option>
+                <option value="ART">Art</option>
+                <option value="BIOC">Biochemistry</option>
+                <option value="BIOL">Biology</option>
+                <option value="BUS">Business Administration</option>
+                <option value="CHEM">Chemistry</option>
+                <option value="COMM">Communications</option>
+                <option value="CSC">Computer Science</option>
+                <option value="CJ">Criminal Justice</option>
+                <option value="ECON">Economics</option>
+                <option value="EDU">Education</option>
+                <option value="EE">Electrical Engineering</option>
+                <option value="ENG">English</option>
+                <option value="ENVS">Environmental Science</option>
+                <option value="FIN">Finance</option>
+                <option value="GEOG">Geography</option>
+                <option value="GEOL">Geology</option>
+                <option value="GD">Graphic Design</option>
+                <option value="HIST">History</option>
+                <option value="HM">Hospitality Management</option>
+                <option value="HR">Human Resources</option>
+                <option value="IT">Information Technology</option>
+                <option value="IR">International Relations</option>
+                <option value="JOUR">Journalism</option>
+                <option value="LAW">Law</option>
+                <option value="MKT">Marketing</option>
+                <option value="MATH">Mathematics</option>
+                <option value="ME">Mechanical Engineering</option>
+                <option value="MUS">Music</option>
+                <option value="NURS">Nursing</option>
+                <option value="PHIL">Philosophy</option>
+                <option value="PHYS">Physics</option>
+                <option value="PS">Political Science</option>
+                <option value="PSY">Psychology</option>
+                <option value="PA">Public Administration</option>
+                <option value="PH">Public Health</option>
+                <option value="SW">Social Work</option>
+                <option value="SOC">Sociology</option>
+                <option value="SE">Software Engineering</option>
+                <option value="SPAN">Spanish</option>
+                <option value="STAT">Statistics</option>
+                <option value="THEA">Theatre</option>
+                <option value="UND">Undeclared</option>
+            </datalist>
+            </div>
+        </div>
+        <div>
+            <label for="student_phone_number">Phone Number:</label>
+            <input type="tel" id="student_phone_number" name="student_phone_number" value="{{ user['phone_number'] }}">
+        </div>
+        <div>
+            <label for="student_dob">Date of Birth:</label>
+            <input type="date" id="student_dob" name="student_dob" value="{{ user['dob'] }}">
+        </div>
+        <div>
+            <label for="student_sex">Sex:</label>
+            <div>
+            <input type="dropdown"  autocomplete="off" role="combobox" id="student_sex" name="student_sex" option_id="{{ user['sex'] }}">
+            <datalist id="student_sexes" role="listbox">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </datalist>
+            </div>
+        </div>
+        <button type="submit">Save Changes</button>
+        {% endif %}
+    </form>
+</div>
+</div>

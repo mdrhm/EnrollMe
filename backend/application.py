@@ -1,7 +1,13 @@
-from flask import Flask, Response, request
+from flask import Flask, request, render_template, session, redirect, Response
+import os
 import hashlib
+from datetime import date
 from queries import SELECT_FROM_WHERE, INSERT_INTO, DELETE_FROM_WHERE, UPDATE_SET_WHERE, generate_csv, get_enrollment, retrieve_roster
+from ai import generate_course
+
 application = Flask(__name__)
+application.config["SESSION_PERMANENT"] = False
+application.secret_key = os.urandom(24)
 
 @application.route('/courses', methods=['GET', 'POST', 'DELETE', 'PUT'])
 def courses():
@@ -45,7 +51,7 @@ def sections():
                 where =  "section.course_id = " + course_id
             elif professor_id:
                 where = "meeting.professor_id = " + professor_id
-            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id INNER JOIN meeting ON section.section_id=meeting.section_id", where)
+            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id LEFT JOIN meeting ON section.section_id=meeting.section_id", where)
             for i in range(len(sections)):
                 sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, CONCAT(first_name, ' ', last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
@@ -143,6 +149,8 @@ def professors():
             inserted = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY professor_id DESC LIMIT 1")[0]
             professor_login["professor_id"] = str(inserted.get("professor_id"))
             INSERT_INTO("login", professor_login)
+            session['id'] = inserted.get("professor_id")
+            session['account_type'] = 'professor'
             return inserted, 201
         case 'DELETE':
           body = request.json
@@ -194,6 +202,8 @@ def students():
             inserted = SELECT_FROM_WHERE("*", "student", "1=1 ORDER BY student_id DESC LIMIT 1")[0]
             student_login["student_id"] = str(inserted.get("student_id"))
             INSERT_INTO("login", student_login)
+            session['id'] = inserted.get("student_id")
+            session['account_type'] = 'student'
             return inserted, 201
         case 'DELETE':
           body = request.json
@@ -224,6 +234,8 @@ def students():
 @application.route('/login', methods=['GET', 'POST'])
 def login():
     match request.method:
+        case 'GET':
+            return redirect('/')
         case 'POST':
             body = request.json
             username = str(body.get('username'))
@@ -238,6 +250,8 @@ def login():
                 user = SELECT_FROM_WHERE("professor.professor_id, first_name, last_name, professor.email, phone_number, department, CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN login ON login.professor_id=professor.professor_id", "(login.professor_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
             if not user or len(user) == 0:
                 return {"status": 401, "error": "Invalid login credentials"}, 401
+            session['id'] = user[0][account_type + "_id"]
+            session['account_type'] = account_type
             return user[0]
 
 @application.route('/enrollments', methods=['GET', 'POST', 'DELETE', 'PUT'])
@@ -289,16 +303,131 @@ def download_roster():
     section_id = request.args.get("section")
     if not section_id:
         return {"status": 400, "error": "Invalid Section ID"}, 400
-    data = retrieve_roster(professor_id, section_id)
-    if not data:
-        return {"status": 400, "error": "Empty Roster"}, 400
-
+    if not professor_id == str(session.get('id')):
+        return {"status": 400, "error": "Professor ID not authenticated"}, 400
+    data = [['Student ID', 'First Name', 'Last Name', 'Email', 'Major']] + retrieve_roster(professor_id, section_id)
+    course_code = SELECT_FROM_WHERE("CONCAT(subject, '_', course_level) as course_code", "course INNER JOIN section ON section.course_id=course.course_id", "section.section_id=" + section_id)[0]["course_code"]
     csv_data = generate_csv(data)
     return Response(
         csv_data,
         mimetype='text/csv',
-        headers={"Content-Disposition": "attachment;filename=roster.csv"}
+        headers={"Content-Disposition": "attachment;filename=" + course_code + "_" + section_id + "_Roster.csv"}
     )
 
+@application.route('/')
+def index():
+    return render_template('login.html', account_type=account_type)
+
+@application.route('/register')
+def signup():
+    return render_template('signup.html', account_type=account_type)
+
+@application.route('/dashboard')
+def professor_dashboard():
+    if not session.get('id') or not session.get('account_type'):
+        return redirect('/')
+    if session.get('account_type') == 'student':
+        return redirect('/enroll')
+    return render_template('dashboard.html', page_title = "MyDashboard", id=session['id'], user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0], account_type = session.get('account_type'))
+
+@application.route('/enroll')
+def student_enroll():
+    if not session.get('id') or not session.get('account_type'):
+        return redirect('/')
+    if session.get('account_type') == 'professor':
+        return redirect('/dashboard')
+    sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, CONCAT(semester.end_date, '') AS end_date, section.instruction_mode, CONCAT(semester.start_date, '') AS start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id")
+    for i in range(len(sections)):
+        sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
+        sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
+        sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
+        sections[i]["roster"] = SELECT_FROM_WHERE("DISTINCT(student.student_id), first_name, last_name, email, major", "student INNER JOIN enrollment on student.student_id=enrollment.student_id INNER JOIN section ON enrollment.section_id=section.section_id", "section.section_id=" + str(sections[i]["section_id"]))
+        sections[i]["enrolled"] = len(sections[i]["roster"])
+    return render_template('enrollment.html', page_title = "MyDashboard", courses=SELECT_FROM_WHERE("*", "course"), sections = sections, enrollments=list(map(lambda x: x["section_id"], SELECT_FROM_WHERE("*", "enrollment", "student_id=" + str(session['id'])))), id = session['id'], account_type = session.get('account_type'), user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+
+@application.route('/section/new')
+def section_new():
+    if not session.get('id') or not session.get('account_type'):
+        return redirect('/')
+    if session.get('account_type') == 'student':
+        return redirect('/enroll')
+    return render_template('section.html', courses = SELECT_FROM_WHERE("*", "course"), title = "Add Section", semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', LEFT(start_date, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), id = "null", user_id = session['id'], section=None, user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+
+@application.route('/section/<string:section_id>/edit')
+def section_edit(section_id):
+    if not session.get('id') or not session.get('account_type'):
+        return redirect('/')
+    if session.get('account_type') == 'student':
+        return redirect('/enroll')
+    if len(SELECT_FROM_WHERE("*", "meeting", "section_id=" + str(section_id) + " AND professor_id=" + str(session.get('id')))) == 0:
+        return redirect('/dashboard')
+    section = SELECT_FROM_WHERE("*", "section", "section_id=" + str(section_id))[0]
+    section["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, professor_id", "meeting", "section_id = " + str(section_id))
+    return render_template('section.html', id = section_id, section = section, courses = SELECT_FROM_WHERE("*", "course"), semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', LEFT(start_date, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), title = "Edit Section", user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+
+@application.route('/logout')
+def logout():
+    del session['id']
+    del session['account_type']
+    return {"message": "Logged out"}
+
+@application.route('/revenue')
+def revenue():
+    return render_template('report.html', services=SELECT_FROM_WHERE("*", "service"))
+
+@application.route("/revenue/download", methods=["GET", "POST"])
+def revenue_download():
+    total_revenue = SELECT_FROM_WHERE("*", "orders")
+    total_revenue += [{"total_revenue":'${:,.2f}'.format(float(SELECT_FROM_WHERE("SUM(total) AS total_revenue", "orders")[0]["total_revenue"]))}]
+    revenue_by_service = SELECT_FROM_WHERE("SUM(total) AS total, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY service_id ORDER BY service_id")
+    order_by_service = SELECT_FROM_WHERE("COUNT(*) AS count, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY service_id ORDER BY service_id")
+    order_by_service_by_month = SELECT_FROM_WHERE("*", "service")
+    for order in order_by_service_by_month:
+        order["orders_by_month"] = SELECT_FROM_WHERE("COUNT(*) as count, LEFT(date, 7) as month", "orders", "service_id=" + str(order["service_id"]) + " GROUP BY month")
+    reports = {
+        "total_revenue": total_revenue,
+        "revenue_by_service": revenue_by_service,
+        "order_by_service": order_by_service,
+        "order_by_service_by_month": order_by_service_by_month
+    }
+    csv_data = generate_csv([["Total Revenue", SELECT_FROM_WHERE("CONCAT(SUM(total), '') AS total_revenue", "orders")[0]["total_revenue"]]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([["Revenue By Each Service"]])
+    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Revenue"]])
+    for order in revenue_by_service:
+        csv_data += generate_csv([[order["service_id"], order["type"], order["name"], order["total"] if order["total"] else 0]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([["Orders By Each Service"]])
+    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Orders"]])
+    for order in order_by_service:
+        csv_data += generate_csv([[order["service_id"], order["type"], order["name"], order["count"]]])
+    csv_data += generate_csv([[]])
+    csv_data += generate_csv([["Orders by each service by month"]])
+    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Sep", "Oct", "Nov", "Dec"]])
+    values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    for service in order_by_service_by_month:
+        values_to_filter = list(map(lambda order: order["count"],service["orders_by_month"]))
+        monthsToFilter = list(map(lambda order: int(order["month"].split("-")[1]),service["orders_by_month"]))
+        for i in range(len(values_to_filter)):
+            values[monthsToFilter[i] - 1] = values_to_filter[i]
+        csv_data += generate_csv([[service["service_id"], service["type"], service["name"]] + values])
+    match request.method:
+        case 'GET':
+            return Response(
+                csv_data,
+                mimetype='text/csv',
+                headers={"Content-Disposition": "attachment;filename=EnrollMe_Report_As_Of_" + str(date.today()) + ".csv"}
+            )
+        case 'POST':
+            return reports
+
+
+@application.route('/ai', methods=['POST'])
+def ai():
+    body = request.json
+    return {"response": generate_course(body.get('query'), body.get('currently_taking'))}
+
 if __name__ == "__main__":
+    account_type = os.getenv("ACCOUNT_TYPE")
     application.run(host='0.0.0.0', debug=True, port=8000)

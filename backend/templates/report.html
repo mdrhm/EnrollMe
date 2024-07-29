@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/styles.css">
+    <title>Report - EnrollMe</title>
+    <link rel="icon" href="/static/images/logo.svg" sizes="any" type="image/svg+xml">
+</head>
+<body class="report-body">
+<nav>
+    <div>
+        <img src="/static/images/logo.svg" class="logo">
+        <h1>MyReport</h1>
+    </div>
+    <a href="/revenue/download" class = "download-report"><img src="/static/images/download.png">Download Report</a>
+</nav>
+<img src="/static/images/down-arrow.png" class="scroll-arrow">
+<div class="revenue-container">
+    <div class="revenue-container-inner" style="--option: 0">
+<div class="total-revenue-container">
+    <h1>Total Revenue: </h1>
+<div class ="total-revenue"></div>
+</div>
+<div class="canvas-container">
+    <h2>Revenue By Each Service</h2>
+    <canvas id="revenue-by-each-service"></canvas>
+</div>
+<div class="canvas-container">
+    <h2>Total Orders By Service</h2>
+    <canvas id="total-orders-by-service"></canvas>
+</div>
+<div class="canvas-container">
+    <h2>Orders by Service By Month</h2>
+    <canvas id="order-service-by-month"></canvas>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0-beta/dist/chart.min.js"></script>
+<script src="/static/scripts/report.js"></script>
+<script src="/static/scripts/components.js"></script>
+</body>
+</html>
