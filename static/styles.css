@@ -1233,10 +1233,11 @@ img.scroll-arrow {
     position: absolute;
     bottom: 10px;
     right: 10px;
-    height: 90px;
+    height: 52px;
     animation: 1.5s scroll-down ease-in-out infinite;
     filter: invert(1);
     cursor: pointer;
+    transition: rotate 0.01s ease-in-out, translate 0.5s ease-in-out;
 }
 
 @keyframes scroll-down{
@@ -1253,4 +1254,9 @@ img.scroll-arrow {
 
 canvas {
     filter: invert(1);
+}
+
+.upwards-arrow{
+    rotate: 180deg;
+    translate: 0-600px;
 }

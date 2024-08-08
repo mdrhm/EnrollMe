@@ -1,34 +1,26 @@
 import csv
 from io import StringIO
-import mysql.connector
 import os
-from dotenv import load_dotenv
-load_dotenv()
+import pandas as pd
+import sqlalchemy as db
+import sqlite3
 
-db = mysql.connector.connect(
-  host=os.getenv("DB_HOST"),
-  user=os.getenv("DB_USER"),
-  password=os.getenv("DB_PASSWORD"),
-  port=os.getenv("DB_PORT"),
-  autocommit=True
-)
+engine = db.create_engine('sqlite:///enrollme.db')
 
-cursor = db.cursor(dictionary=True)
-cursor.execute("USE " + os.getenv("DB_NAME") + ";")
+conn = sqlite3.connect('enrollme.db', check_same_thread=False)
+cursor = conn.cursor()
 
 def SELECT_FROM_WHERE(s, f, w="1=1"):
     try:
-        cursor.execute("SELECT " + s + " FROM " + f + " WHERE " + w + ";")
-        arr = []
-        for row in cursor:
-            arr += [row]
-        return arr
+        with engine.connect() as connection:
+            return pd.DataFrame(connection.execute(db.text("SELECT " + s + " FROM " + f + " WHERE " + w + ";")).fetchall()).to_dict('records')
     except Exception as error:
         return {"error": str(error)}
 
 def INSERT_INTO(t, d):
     try:
         cursor.execute("INSERT INTO " + t + "(" + ", ".join(list(d.keys())) + ") VALUES ('" + "', '".join(list(map(lambda value: str(value), d.values()))) + "');")
+        conn.commit()
         return {"message": "Insert Successful", "inserted": d}
     except Exception as error:
         return {"error": str(error)}
@@ -36,6 +28,7 @@ def INSERT_INTO(t, d):
 def DELETE_FROM_WHERE(t, w):
     try:
         cursor.execute("DELETE FROM " + t + " WHERE " + w + ";")
+        conn.commit()
         return {"message": "Deletion Successful"}
     except Exception as error:
         return {"error": str(error)}
@@ -44,6 +37,7 @@ def UPDATE_SET_WHERE(t, s, w):
     try:
         set = list(map(lambda key: str(key + " = '" + str(s[key]) + "'"), s.keys()))
         cursor.execute("UPDATE " + t + " SET " + ", ".join(set) + " WHERE " + w + ";")
+        conn.commit()
         return SELECT_FROM_WHERE("*", t, w)
     except Exception as error:
         return {"error": str(error)}
@@ -58,7 +52,7 @@ def retrieve_roster(professor_id, section_id):
     except Exception as error:
         print(str(error))
         return {"error": str(error)}
-    
+
 
 def generate_csv(data):
     string_buffer = StringIO()
@@ -66,7 +60,7 @@ def generate_csv(data):
     csv_writer.writerows(data)
     string_buffer.seek(0)
     return string_buffer.getvalue()
-    
+
 def get_enrollment(id):
     try:
         cursor.callproc('GetEnrollments', [id])

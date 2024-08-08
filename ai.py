@@ -3,7 +3,7 @@ import json
 import google.generativeai as genai
 import os
 
-genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 def get_section_ids(section):

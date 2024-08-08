@@ -199,6 +199,7 @@ function scrollDown(){
     document.querySelector(".revenue-container-inner").style = "--option: " + option
     switch (option) {
         case 0:
+            document.querySelector(".scroll-arrow").classList.remove("upwards-arrow")
             showRevenue(total_revenue.at(-1)["total_revenue"])
             break
         case 1:
@@ -208,6 +209,7 @@ function scrollDown(){
             loadTotalOrdersByService()
             break
         case 3:
+            document.querySelector(".scroll-arrow").classList.add("upwards-arrow")
             loadOrderByServiceByMonth()
             break
     }

@@ -51,7 +51,7 @@ def sections():
                 where =  "section.course_id = " + course_id
             elif professor_id:
                 where = "meeting.professor_id = " + professor_id
-            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id LEFT JOIN meeting ON section.section_id=meeting.section_id", where)
+            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', substr(semester.start_date, 1, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id LEFT JOIN meeting ON section.section_id=meeting.section_id", where)
             for i in range(len(sections)):
                 sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, CONCAT(first_name, ' ', last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
@@ -316,11 +316,11 @@ def download_roster():
 
 @application.route('/')
 def index():
-    return render_template('login.html', account_type=account_type)
+    return render_template('login.html')
 
 @application.route('/register')
 def signup():
-    return render_template('signup.html', account_type=account_type)
+    return render_template('signup.html')
 
 @application.route('/dashboard')
 def professor_dashboard():
@@ -336,7 +336,7 @@ def student_enroll():
         return redirect('/')
     if session.get('account_type') == 'professor':
         return redirect('/dashboard')
-    sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, CONCAT(semester.end_date, '') AS end_date, section.instruction_mode, CONCAT(semester.start_date, '') AS start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id")
+    sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, CONCAT(semester.end_date, '') AS end_date, section.instruction_mode, CONCAT(semester.start_date, '') AS start_date, section.max_capacity, CONCAT(semester.season, ' ', substr(semester.start_date, 1, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id")
     for i in range(len(sections)):
         sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
@@ -351,7 +351,7 @@ def section_new():
         return redirect('/')
     if session.get('account_type') == 'student':
         return redirect('/enroll')
-    return render_template('section.html', courses = SELECT_FROM_WHERE("*", "course"), title = "Add Section", semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', LEFT(start_date, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), id = "null", user_id = session['id'], section=None, user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+    return render_template('section.html', courses = SELECT_FROM_WHERE("*", "course"), title = "Add Section", semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', substr(start_date, 1, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), id = "null", user_id = session['id'], section=None, user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
 
 @application.route('/section/<string:section_id>/edit')
 def section_edit(section_id):
@@ -363,7 +363,7 @@ def section_edit(section_id):
         return redirect('/dashboard')
     section = SELECT_FROM_WHERE("*", "section", "section_id=" + str(section_id))[0]
     section["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, professor_id", "meeting", "section_id = " + str(section_id))
-    return render_template('section.html', id = section_id, section = section, courses = SELECT_FROM_WHERE("*", "course"), semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', LEFT(start_date, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), title = "Edit Section", user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+    return render_template('section.html', id = section_id, section = section, courses = SELECT_FROM_WHERE("*", "course"), semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', substr(start_date, 1, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), title = "Edit Section", user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
 
 @application.route('/logout')
 def logout():
@@ -379,11 +379,11 @@ def revenue():
 def revenue_download():
     total_revenue = SELECT_FROM_WHERE("*", "orders")
     total_revenue += [{"total_revenue":'${:,.2f}'.format(float(SELECT_FROM_WHERE("SUM(total) AS total_revenue", "orders")[0]["total_revenue"]))}]
-    revenue_by_service = SELECT_FROM_WHERE("SUM(total) AS total, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY service_id ORDER BY service_id")
-    order_by_service = SELECT_FROM_WHERE("COUNT(*) AS count, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY service_id ORDER BY service_id")
+    revenue_by_service = SELECT_FROM_WHERE("SUM(total) AS total, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY orders.service_id ORDER BY orders.service_id")
+    order_by_service = SELECT_FROM_WHERE("COUNT(*) AS count, name, type, service.service_id", "orders RIGHT JOIN service ON orders.service_id=service.service_id", "1=1 GROUP BY orders.service_id ORDER BY orders.service_id")
     order_by_service_by_month = SELECT_FROM_WHERE("*", "service")
     for order in order_by_service_by_month:
-        order["orders_by_month"] = SELECT_FROM_WHERE("COUNT(*) as count, LEFT(date, 7) as month", "orders", "service_id=" + str(order["service_id"]) + " GROUP BY month")
+        order["orders_by_month"] = SELECT_FROM_WHERE("COUNT(*) as count, substr(date, 1, 7) as month", "orders", "service_id=" + str(order["service_id"]) + " GROUP BY month")
     reports = {
         "total_revenue": total_revenue,
         "revenue_by_service": revenue_by_service,
@@ -404,9 +404,9 @@ def revenue_download():
         csv_data += generate_csv([[order["service_id"], order["type"], order["name"], order["count"]]])
     csv_data += generate_csv([[]])
     csv_data += generate_csv([["Orders by each service by month"]])
-    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Sep", "Oct", "Nov", "Dec"]])
-    values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]])
     for service in order_by_service_by_month:
+        values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         values_to_filter = list(map(lambda order: order["count"],service["orders_by_month"]))
         monthsToFilter = list(map(lambda order: int(order["month"].split("-")[1]),service["orders_by_month"]))
         for i in range(len(values_to_filter)):
@@ -421,7 +421,6 @@ def revenue_download():
             )
         case 'POST':
             return reports
-
 
 @application.route('/ai', methods=['POST'])
 def ai():

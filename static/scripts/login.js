@@ -1,27 +1,22 @@
-const account_type = document.querySelector("account").innerHTML
-document.querySelector("account").remove()
-
 document.getElementById('loginForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
     let data = {
         username: document.getElementById('username').value,
         password: document.getElementById('password').value,
-        account_type: account_type
+        account_type: document.getElementById('account_type').getAttribute("option_id")
     };
     const login = new XMLHttpRequest();
     login.withCredentials = true;
     login.addEventListener("readystatechange", function() {
         if(this.readyState === 4) {
-            if(this.status == 200){
-                if(account_type === 'professor') {
+            if (this.status == 200) {
+                if (document.getElementById('account_type').getAttribute("option_id") === 'professor') {
                     window.location.href = "/dashboard"
-                }
-                else if(account_type === 'student') {
+                } else if (document.getElementById('account_type').getAttribute("option_id") === 'student') {
                     window.location.href = "/enroll"
                 }
-            }
-            else {
+            } else {
                 document.querySelector(".login-error").classList.remove("hidden")
             }
         }
