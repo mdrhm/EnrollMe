@@ -60,34 +60,34 @@ def sections():
                 sections[i]["enrolled"] = len(sections[i]["roster"])
             return sections
         case 'POST':
-            body = request.json
-            last_section_id = SELECT_FROM_WHERE("MAX(section_id)", "section")[0].get("MAX(section_id)")
-            body["section_id"] = 1000 if str(last_section_id) == 'None' else last_section_id + 1
-            section = {
-                "section_id": body.get('section_id'),
-                "course_id": body.get('course_id'),
-                "max_capacity": body.get('max_capacity'),
-                "semester_id": body.get('semester_id'),
-                "instruction_mode": body.get('instruction_mode'),
-            }
-            for key in section.keys():
-                if not section.get(key):
-                    del section[key]
-            INSERT_INTO("section", section)
-            section_id = SELECT_FROM_WHERE("MAX(section_id)", "section")[0]["MAX(section_id)"]
-            for day in body.get("meeting_times"):
-                meeting = {
+            for body in request.json:
+                last_section_id = SELECT_FROM_WHERE("MAX(section_id)", "section")[0].get("MAX(section_id)")
+                body["section_id"] = 1000 if str(last_section_id) == 'None' else last_section_id + 1
+                section = {
                     "section_id": body.get('section_id'),
-                    "day": day.get("day"),
-                    "start_time": day.get("start_time"),
-                    "end_time": day.get("end_time"),
-                    "professor_id": day.get('professor_id'),
-                    "room": day.get('room')
+                    "course_id": body.get('course_id'),
+                    "max_capacity": body.get('max_capacity'),
+                    "semester_id": body.get('semester_id'),
+                    "instruction_mode": body.get('instruction_mode'),
                 }
-                for key in meeting.keys():
-                    if not meeting.get(key):
-                        del meeting[key]
-                INSERT_INTO('meeting', meeting)
+                for key in section.keys():
+                    if not section.get(key):
+                        del section[key]
+                INSERT_INTO("section", section)
+                section_id = SELECT_FROM_WHERE("MAX(section_id)", "section")[0]["MAX(section_id)"]
+                for day in body.get("meeting_times"):
+                    meeting = {
+                        "section_id": body.get('section_id'),
+                        "day": day.get("day"),
+                        "start_time": day.get("start_time"),
+                        "end_time": day.get("end_time"),
+                        "professor_id": day.get('professor_id'),
+                        "room": day.get('room')
+                    }
+                    for key in meeting.keys():
+                        if not meeting.get(key):
+                            del meeting[key]
+                    INSERT_INTO('meeting', meeting)
             return {"message": "Insert Successful", "inserted": body}
         case 'DELETE':
             body = request.json
@@ -131,26 +131,27 @@ def professors():
                 return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor", "CONCAT(first_name, ' ', last_name) LIKE '%" + query.replace(" ", "%") + "%'")
             return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor")
         case 'POST':
-            body = request.json
-            professor = {
-                "first_name": body.get('first_name'),
-                "last_name": body.get('last_name'),
-                "email": body.get('email'),
-                "phone_number": body.get('phone_number'),
-                "department": body.get('department')
-            }
-            professor_login = {
-                "email": body.get('email'),
-                "password": None if not body.get('password') else hashlib.sha256(body.get('password').encode('utf-8')).hexdigest()
-            }
-            if None in professor.values() or None in professor_login.values():
-                return {"status": 400, "error": "Invalid body"}, 400
-            INSERT_INTO("professor", professor)
-            inserted = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY professor_id DESC LIMIT 1")[0]
-            professor_login["professor_id"] = str(inserted.get("professor_id"))
-            INSERT_INTO("login", professor_login)
-            session['id'] = inserted.get("professor_id")
-            session['account_type'] = 'professor'
+#             body = request.json
+            for body in request.json:
+                professor = {
+                    "first_name": body.get('first_name'),
+                    "last_name": body.get('last_name'),
+                    "email": body.get('email'),
+                    "phone_number": body.get('phone_number'),
+                    "department": body.get('department')
+                }
+                professor_login = {
+                    "email": body.get('email'),
+                    "password": None if not body.get('password') else hashlib.sha256(body.get('password').encode('utf-8')).hexdigest()
+                }
+                if None in professor.values() or None in professor_login.values():
+                    return {"status": 400, "error": "Invalid body"}, 400
+                INSERT_INTO("professor", professor)
+                inserted = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY professor_id DESC LIMIT 1")[0]
+                professor_login["professor_id"] = str(inserted.get("professor_id"))
+                INSERT_INTO("login", professor_login)
+                session['id'] = inserted.get("professor_id")
+                session['account_type'] = 'professor'
             return inserted, 201
         case 'DELETE':
           body = request.json
@@ -182,28 +183,29 @@ def professors():
 def students():
     match request.method:
         case 'POST':
-            body = request.json
-            student = {
-                "first_name": body.get('first_name'),
-                "last_name": body.get('last_name'),
-                "email": body.get('email'),
-                "phone_number": body.get('phone_number'),
-                "dob": body.get('dob'),
-                "sex": body.get('sex'),
-                "major": body.get('major')
-            }
-            student_login = {
-                "email": body.get('email'),
-                "password": None if not body.get('password') else hashlib.sha256(body.get('password').encode('utf-8')).hexdigest()
-            }
-            if None in student.values() or None in student_login.values():
-                return {"status": 400, "error": "Invalid body"}, 400
-            INSERT_INTO("student", student)
-            inserted = SELECT_FROM_WHERE("*", "student", "1=1 ORDER BY student_id DESC LIMIT 1")[0]
-            student_login["student_id"] = str(inserted.get("student_id"))
-            INSERT_INTO("login", student_login)
-            session['id'] = inserted.get("student_id")
-            session['account_type'] = 'student'
+#             body = request.json
+            for body in request.json:
+                student = {
+                    "first_name": body.get('first_name'),
+                    "last_name": body.get('last_name'),
+                    "email": body.get('email'),
+                    "phone_number": body.get('phone_number'),
+                    "dob": body.get('dob'),
+                    "sex": body.get('sex'),
+                    "major": body.get('major')
+                }
+                student_login = {
+                    "email": body.get('email'),
+                    "password": None if not body.get('password') else hashlib.sha256(body.get('password').encode('utf-8')).hexdigest()
+                }
+                if None in student.values() or None in student_login.values():
+                    return {"status": 400, "error": "Invalid body"}, 400
+                INSERT_INTO("student", student)
+                inserted = SELECT_FROM_WHERE("*", "student", "1=1 ORDER BY student_id DESC LIMIT 1")[0]
+                student_login["student_id"] = str(inserted.get("student_id"))
+                INSERT_INTO("login", student_login)
+                session['id'] = inserted.get("student_id")
+                session['account_type'] = 'student'
             return inserted, 201
         case 'DELETE':
           body = request.json
@@ -428,5 +430,4 @@ def ai():
     return {"response": generate_course(body.get('query'), body.get('currently_taking'))}
 
 if __name__ == "__main__":
-    account_type = os.getenv("ACCOUNT_TYPE")
     application.run(host='0.0.0.0', debug=True, port=8000)

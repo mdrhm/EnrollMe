@@ -44,11 +44,9 @@ def UPDATE_SET_WHERE(t, s, w):
 
 def retrieve_roster(professor_id, section_id):
     try:
-        cursor.callproc('RetrieveRoster', [professor_id, section_id])
-        studentInfo = []
-        for result in cursor.stored_results():
-            studentInfo.extend(result.fetchall())
-        return studentInfo
+        roster = SELECT_FROM_WHERE("student.student_id, first_name, last_name, email, major", "student INNER JOIN enrollment ON student.student_id=enrollment.student_id", "section_id=" + str(section_id) + " GROUP BY last_name, first_name")
+        list(map(lambda x : [x["student_id"], x["first_name"], x["last_name"], x["email"], x["major"]], roster))
+        return list(map(lambda x : x.values(), roster))
     except Exception as error:
         print(str(error))
         return {"error": str(error)}
@@ -63,21 +61,6 @@ def generate_csv(data):
 
 def get_enrollment(id):
     try:
-        cursor.callproc('GetEnrollments', [id])
-        sections = []
-        for result in cursor.stored_results():
-            sections += result.fetchall()
-        return list(map(lambda x: {"section_id": x[0],
-                                "course_name": x[1],
-                                "course_id": x[2],
-                                "credits": x[3],
-                                "description": x[4],
-                                "course_code": x[5],
-                                "end_date": x[6],
-                                "instruction_mode": x[7],
-                                "start_date": x[8],
-                                "max_capacity": x[9],
-                                "semester": x[10]
-                                }, sections))
+        return SELECT_FROM_WHERE("DISTINCT (section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', LEFT(semester.start_date, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN enrollment ON enrollment.section_id = section.section_id INNER JOIN semester ON section.semester_id = semester.semester_id", "enrollment.student_id = id;")
     except Exception as error:
         return {"error": str(error)}
