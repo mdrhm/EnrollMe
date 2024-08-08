@@ -18,7 +18,7 @@ def courses():
             if id:
                 return SELECT_FROM_WHERE("*", "course", "course_id = " + id)
             elif query:
-                return SELECT_FROM_WHERE("*", "course", "CONCAT(subject, course_level, name) LIKE '%" + query.replace(" ", "%") + "%'")
+                return SELECT_FROM_WHERE("*", "course", "subject || course_level || name LIKE '%" + query.replace(" ", "%") + "%'")
             return SELECT_FROM_WHERE("*", "course")
         case 'POST':
             body = request.json
@@ -51,11 +51,11 @@ def sections():
                 where =  "section.course_id = " + course_id
             elif professor_id:
                 where = "meeting.professor_id = " + professor_id
-            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, CONCAT(semester.season, ' ', substr(semester.start_date, 1, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id LEFT JOIN meeting ON section.section_id=meeting.section_id", where)
+            sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, subject || ' ' || course.course_level AS course_code, semester.end_date, section.instruction_mode, semester.start_date, section.max_capacity, semester.season || ' ' || substr(semester.start_date, 1, 4) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id LEFT JOIN meeting ON section.section_id=meeting.section_id", where)
             for i in range(len(sections)):
-                sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, CONCAT(first_name, ' ', last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
+                sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, start_time || '' AS start_time, end_time || '' AS end_time, room, first_name || ' ' || last_name AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
-                sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
+                sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), first_name || ' ' || last_name AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
                 sections[i]["roster"] = SELECT_FROM_WHERE("DISTINCT(student.student_id), first_name, last_name, email, major", "student INNER JOIN enrollment on student.student_id=enrollment.student_id INNER JOIN section ON enrollment.section_id=section.section_id", "section.section_id=" + str(sections[i]["section_id"]))
                 sections[i]["enrolled"] = len(sections[i]["roster"])
             return sections
@@ -126,10 +126,10 @@ def professors():
             query = request.args.get('q')
             id = request.args.get('id')
             if id:
-                return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor", "professor_id = " + id)
+                return SELECT_FROM_WHERE("*, first_name || ' ' || last_name AS full_name", "professor", "professor_id = " + id)
             elif query:
-                return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor", "CONCAT(first_name, ' ', last_name) LIKE '%" + query.replace(" ", "%") + "%'")
-            return SELECT_FROM_WHERE("*, CONCAT(first_name, ' ', last_name) AS full_name", "professor")
+                return SELECT_FROM_WHERE("*, first_name || ' ' || last_name", "professor", "first_name || ' ' || last_name LIKE '%" + query.replace(" ", "%") + "%'")
+            return SELECT_FROM_WHERE("*, first_name || ' ' || last_name AS full_name", "professor")
         case 'POST':
 #             body = request.json
             for body in request.json:
@@ -247,9 +247,9 @@ def login():
                 return {"status": 400, "error": "Email/ID or password wasn't provided"}, 400
             user = None
             if account_type == 'student':
-                user = SELECT_FROM_WHERE("student.student_id, first_name, last_name, student.email, phone_number, dob, sex, major, CONCAT(first_name, ' ', last_name) AS full_name", "student INNER JOIN login ON login.student_id=student.student_id", "(login.student_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
+                user = SELECT_FROM_WHERE("student.student_id, first_name, last_name, student.email, phone_number, dob, sex, major, first_name || ' ' || last_name) AS full_name", "student INNER JOIN login ON login.student_id=student.student_id", "(login.student_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
             elif account_type == 'professor':
-                user = SELECT_FROM_WHERE("professor.professor_id, first_name, last_name, professor.email, phone_number, department, CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN login ON login.professor_id=professor.professor_id", "(login.professor_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
+                user = SELECT_FROM_WHERE("professor.professor_id, first_name, last_name, professor.email, phone_number, department, first_name || ' ' || last_name AS full_name", "professor INNER JOIN login ON login.professor_id=professor.professor_id", "(login.professor_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
             if not user or len(user) == 0:
                 return {"status": 401, "error": "Invalid login credentials"}, 401
             session['id'] = user[0][account_type + "_id"]
@@ -265,9 +265,9 @@ def enrollments():
                 return {"status": 401, "error": "Invalid Student ID"}, 401
             schedule =  get_enrollment(id)
             for i in range(len(schedule)):
-                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, CONCAT(professor.first_name, ' ', professor.last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
+                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, start_time || '' AS start_time, end_time || '' AS end_time, room, professor.first_name || ' ' || professor.last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(schedule[i]["section_id"]))))
-                schedule[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
+                schedule[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), first_name || ' ' || last_name AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["enrolled"] = SELECT_FROM_WHERE("COUNT(*)", "enrollment", "section_id = " + str(schedule[i]["section_id"]))[0]["COUNT(*)"]
             return schedule
         case 'POST':
@@ -308,7 +308,7 @@ def download_roster():
     if not professor_id == str(session.get('id')):
         return {"status": 400, "error": "Professor ID not authenticated"}, 400
     data = [['Student ID', 'First Name', 'Last Name', 'Email', 'Major']] + retrieve_roster(professor_id, section_id)
-    course_code = SELECT_FROM_WHERE("CONCAT(subject, '_', course_level) as course_code", "course INNER JOIN section ON section.course_id=course.course_id", "section.section_id=" + section_id)[0]["course_code"]
+    course_code = SELECT_FROM_WHERE("subject || '_', course_level || as course_code", "course INNER JOIN section ON section.course_id=course.course_id", "section.section_id=" + section_id)[0]["course_code"]
     csv_data = generate_csv(data)
     return Response(
         csv_data,
@@ -338,11 +338,11 @@ def student_enroll():
         return redirect('/')
     if session.get('account_type') == 'professor':
         return redirect('/dashboard')
-    sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, CONCAT(subject, ' ', course.course_level) AS course_code, CONCAT(semester.end_date, '') AS end_date, section.instruction_mode, CONCAT(semester.start_date, '') AS start_date, section.max_capacity, CONCAT(semester.season, ' ', substr(semester.start_date, 1, 4)) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id")
+    sections =  SELECT_FROM_WHERE("DISTINCT(section.section_id), course.name AS course_name, section.course_id, course.credits, course.description, subject || ' ' || course.course_level AS course_code, semester.end_date || '' AS end_date, section.instruction_mode, semester.start_date || '' AS start_date, section.max_capacity, semester.season || ' ' || substr(semester.start_date, 1, 4) AS semester", "course INNER JOIN section ON course.course_id = section.course_id INNER JOIN semester ON section.semester_id=semester.semester_id")
     for i in range(len(sections)):
-        sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
+        sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, start_time || '' AS start_time, end_time || '' AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
-        sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), CONCAT(first_name, ' ', last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
+        sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), first_name || ' ' || last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["roster"] = SELECT_FROM_WHERE("DISTINCT(student.student_id), first_name, last_name, email, major", "student INNER JOIN enrollment on student.student_id=enrollment.student_id INNER JOIN section ON enrollment.section_id=section.section_id", "section.section_id=" + str(sections[i]["section_id"]))
         sections[i]["enrolled"] = len(sections[i]["roster"])
     return render_template('enrollment.html', page_title = "MyDashboard", courses=SELECT_FROM_WHERE("*", "course", "1=1 ORDER BY subject, course_level"), sections = sections, enrollments=list(map(lambda x: x["section_id"], SELECT_FROM_WHERE("*", "enrollment", "student_id=" + str(session['id'])))), id = session['id'], account_type = session.get('account_type'), user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
@@ -353,7 +353,7 @@ def section_new():
         return redirect('/')
     if session.get('account_type') == 'student':
         return redirect('/enroll')
-    return render_template('section.html', courses = SELECT_FROM_WHERE("*", "course"), title = "Add Section", semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', substr(start_date, 1, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), id = "null", user_id = session['id'], section=None, user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+    return render_template('section.html', courses = SELECT_FROM_WHERE("*", "course"), title = "Add Section", semesters = SELECT_FROM_WHERE("semester_id, season || ' ' || substr(start_date, 1, 4) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), id = "null", user_id = session['id'], section=None, user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
 
 @application.route('/section/<string:section_id>/edit')
 def section_edit(section_id):
@@ -364,8 +364,8 @@ def section_edit(section_id):
     if len(SELECT_FROM_WHERE("*", "meeting", "section_id=" + str(section_id) + " AND professor_id=" + str(session.get('id')))) == 0:
         return redirect('/dashboard')
     section = SELECT_FROM_WHERE("*", "section", "section_id=" + str(section_id))[0]
-    section["meeting_times"] = SELECT_FROM_WHERE("day, CONCAT(start_time, '') AS start_time, CONCAT(end_time, '') AS end_time, room, professor_id", "meeting", "section_id = " + str(section_id))
-    return render_template('section.html', id = section_id, section = section, courses = SELECT_FROM_WHERE("*", "course"), semesters = SELECT_FROM_WHERE("semester_id, CONCAT(season, ' ', substr(start_date, 1, 4)) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), title = "Edit Section", user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
+    section["meeting_times"] = SELECT_FROM_WHERE("day, start_time || '' AS start_time, end_time || '' AS end_time, room, professor_id", "meeting", "section_id = " + str(section_id))
+    return render_template('section.html', id = section_id, section = section, courses = SELECT_FROM_WHERE("*", "course"), semesters = SELECT_FROM_WHERE("semester_id, season || ' ' || substr(start_date, 1, 4) AS name", "semester"), professors = SELECT_FROM_WHERE("*", "professor", "1=1 ORDER BY last_name"), title = "Edit Section", user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
 
 @application.route('/logout')
 def logout():
@@ -392,7 +392,7 @@ def revenue_download():
         "order_by_service": order_by_service,
         "order_by_service_by_month": order_by_service_by_month
     }
-    csv_data = generate_csv([["Total Revenue", SELECT_FROM_WHERE("CONCAT(SUM(total), '') AS total_revenue", "orders")[0]["total_revenue"]]])
+    csv_data = generate_csv([["Total Revenue", SELECT_FROM_WHERE("SUM(total) || '' AS total_revenue", "orders")[0]["total_revenue"]]])
     csv_data += generate_csv([[]])
     csv_data += generate_csv([["Revenue By Each Service"]])
     csv_data += generate_csv([["Service ID", "Service Type", "Service Name", "Revenue"]])
