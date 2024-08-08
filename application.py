@@ -247,11 +247,12 @@ def login():
                 return {"status": 400, "error": "Email/ID or password wasn't provided"}, 400
             user = None
             if account_type == 'student':
-                user = SELECT_FROM_WHERE("student.student_id, first_name, last_name, student.email, phone_number, dob, sex, major, first_name || ' ' || last_name) AS full_name", "student INNER JOIN login ON login.student_id=student.student_id", "(login.student_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
+                user = SELECT_FROM_WHERE("student.student_id, first_name, last_name, student.email, phone_number, dob, sex, major, first_name || ' ' || last_name AS full_name", "student INNER JOIN login ON login.student_id=student.student_id", "(login.student_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
             elif account_type == 'professor':
                 user = SELECT_FROM_WHERE("professor.professor_id, first_name, last_name, professor.email, phone_number, department, first_name || ' ' || last_name AS full_name", "professor INNER JOIN login ON login.professor_id=professor.professor_id", "(login.professor_id = '" + username + "' OR login.email = '" + username + "') AND password='" + password + "'")
             if not user or len(user) == 0:
                 return {"status": 401, "error": "Invalid login credentials"}, 401
+            print("User:" + str(user))
             session['id'] = user[0][account_type + "_id"]
             session['account_type'] = account_type
             return user[0]
@@ -265,7 +266,7 @@ def enrollments():
                 return {"status": 401, "error": "Invalid Student ID"}, 401
             schedule =  get_enrollment(id)
             for i in range(len(schedule)):
-                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, start_time || '' AS start_time, end_time || '' AS end_time, room, professor.first_name || ' ' || professor.last_name) AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
+                schedule[i]["meeting_times"] = SELECT_FROM_WHERE("day, start_time || '' AS start_time, end_time || '' AS end_time, room, professor.first_name || ' ' || professor.last_name AS professor", "meeting INNER JOIN professor ON meeting.professor_id=professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(schedule[i]["section_id"]))))
                 schedule[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), first_name || ' ' || last_name AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(schedule[i]["section_id"]))
                 schedule[i]["enrolled"] = SELECT_FROM_WHERE("COUNT(*)", "enrollment", "section_id = " + str(schedule[i]["section_id"]))[0]["COUNT(*)"]
@@ -308,7 +309,7 @@ def download_roster():
     if not professor_id == str(session.get('id')):
         return {"status": 400, "error": "Professor ID not authenticated"}, 400
     data = [['Student ID', 'First Name', 'Last Name', 'Email', 'Major']] + retrieve_roster(professor_id, section_id)
-    course_code = SELECT_FROM_WHERE("subject || '_', course_level || as course_code", "course INNER JOIN section ON section.course_id=course.course_id", "section.section_id=" + section_id)[0]["course_code"]
+    course_code = SELECT_FROM_WHERE("subject || '_' || course_level AS course_code", "course INNER JOIN section ON section.course_id=course.course_id", "section.section_id=" + section_id)[0]["course_code"]
     csv_data = generate_csv(data)
     return Response(
         csv_data,
@@ -330,7 +331,7 @@ def professor_dashboard():
         return redirect('/')
     if session.get('account_type') == 'student':
         return redirect('/enroll')
-    return render_template('dashboard.html', page_title = "MyDashboard", id=session['id'], user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0], account_type = session.get('account_type'))
+    return render_template('dashboard.html', page_title = "MySchedule", id=session['id'], user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0], account_type = session.get('account_type'))
 
 @application.route('/enroll')
 def student_enroll():
@@ -342,7 +343,7 @@ def student_enroll():
     for i in range(len(sections)):
         sections[i]["meeting_times"] = SELECT_FROM_WHERE("day, start_time || '' AS start_time, end_time || '' AS end_time", "meeting", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["rooms"] = list(map(lambda x: x["room"], SELECT_FROM_WHERE("DISTINCT(room)", "meeting", "section_id = " + str(sections[i]["section_id"]))))
-        sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), first_name || ' ' || last_name) AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
+        sections[i]["professors"] = SELECT_FROM_WHERE("DISTINCT(professor.professor_id), first_name || ' ' || last_name AS full_name", "professor INNER JOIN meeting ON meeting.professor_id = professor.professor_id", "section_id = " + str(sections[i]["section_id"]))
         sections[i]["roster"] = SELECT_FROM_WHERE("DISTINCT(student.student_id), first_name, last_name, email, major", "student INNER JOIN enrollment on student.student_id=enrollment.student_id INNER JOIN section ON enrollment.section_id=section.section_id", "section.section_id=" + str(sections[i]["section_id"]))
         sections[i]["enrolled"] = len(sections[i]["roster"])
     return render_template('enrollment.html', page_title = "MyDashboard", courses=SELECT_FROM_WHERE("*", "course", "1=1 ORDER BY subject, course_level"), sections = sections, enrollments=list(map(lambda x: x["section_id"], SELECT_FROM_WHERE("*", "enrollment", "student_id=" + str(session['id'])))), id = session['id'], account_type = session.get('account_type'), user = SELECT_FROM_WHERE("*", session.get('account_type'), session.get('account_type') + "_id = " + str(session['id']))[0])
